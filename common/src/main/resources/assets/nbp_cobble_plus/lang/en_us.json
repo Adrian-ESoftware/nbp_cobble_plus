@@ -1,0 +1,6 @@
+{
+  "mod.nbp_cobble_plus.name": "NBP Cobble Plus",
+  "mod.nbp_cobble_plus.description": "Official Time NBP mod for the Cobblemon modpack.",
+  "command.nbp.reloaded": "§a[NBP Cobble Plus] Configuration successfully reloaded!",
+  "command.nbp.info": "§6[Time NBP] Modpack Cobble Plus v1.0.0"
+}

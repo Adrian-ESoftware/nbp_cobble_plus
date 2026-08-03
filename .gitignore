@@ -1,0 +1,59 @@
+# ==========================================
+# NBP Cobble Plus - Git Ignore Configuration
+# Mantém apenas o essencial para compilação
+# ==========================================
+
+# --- Gradle Caches & Build Outputs ---
+.gradle/
+**/build/
+build/
+.gradletasknamecache
+gradle-app.setting
+
+# --- Preservar o Gradle Wrapper ---
+!gradle/wrapper/gradle-wrapper.jar
+!gradlew
+!gradlew.bat
+
+# --- Pastas de Execução e Logs de Teste do Minecraft ---
+**/run/
+run/
+crash-reports/
+**/crash-reports/
+logs/
+**/logs/
+
+# --- IDEs (IntelliJ IDEA, VS Code, Eclipse) ---
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+out/
+bin/
+**/bin/
+
+# --- Caches do Kotlin ---
+.kotlin/
+**/.kotlin/
+
+# --- Arquivos Temporários e Scratches ---
+TEMP/
+scratch/
+*.tmp
+*.log
+
+# --- Arquivos Compilados / Binários Produzidos ---
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- Arquivos do Sistema Operacional ---
+.DS_Store
+.directory
+Thumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/

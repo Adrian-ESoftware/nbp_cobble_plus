@@ -1,0 +1,33 @@
+modLoader = "kotlinforforge"
+loaderVersion = "[5,)"
+license = "MIT"
+
+[[mods]]
+modId = "nbp_cobble_plus"
+version = "${version}"
+displayName = "NBP Cobble Plus"
+authors = "Time NBP"
+description = '''
+Mod oficial do Time NBP para adicionar e configurar conteudos adicionais no modpack Cobblemon.
+'''
+
+[[dependencies.nbp_cobble_plus]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.nbp_cobble_plus]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.nbp_cobble_plus]]
+modId = "cobblemon"
+type = "required"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"

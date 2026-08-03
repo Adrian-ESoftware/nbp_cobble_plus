@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "nbp_cobble_plus",
+  "version": "${version}",
+  "name": "NBP Cobble Plus",
+  "description": "Mod oficial do Time NBP para adicionar e configurar conteudos adicionais no modpack Cobblemon.",
+  "authors": ["Time NBP"],
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "com.nbp.cobbleplus.fabric.NbpCobblePlusFabric"
+      }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "com.nbp.cobbleplus.fabric.NbpCobblePlusFabricClient"
+      }
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.17.0",
+    "minecraft": "1.21.1",
+    "fabric-language-kotlin": "*",
+    "cobblemon": "*"
+  }
+}
