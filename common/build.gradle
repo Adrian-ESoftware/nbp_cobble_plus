@@ -7,4 +7,10 @@ dependencies {
 
     // API comum do Cobblemon
     modImplementation "com.cobblemon:mod:${rootProject.cobblemon_version}"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit5:2.1.21"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }

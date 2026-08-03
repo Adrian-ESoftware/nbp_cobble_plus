@@ -1,0 +1,12 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":[" IS","GPG","C  "],
+  "key":{
+    "I":{"item":"minecraft:iron_ingot"},
+    "S":{"item":"minecraft:iron_nugget"},
+    "G":{"item":"minecraft:glass_pane"},
+    "P":{"item":"cobblemon:psychic_gem"},
+    "C":{"item":"minecraft:copper_ingot"}
+  },
+  "result":{"id":"nbp_cobble_plus:dna_syringe_empty","count":1}
+}

@@ -1,0 +1,5 @@
+{
+  "type":"minecraft:crafting_shaped","pattern":["CNC","NGN","CBC"],
+  "key":{"N":{"item":"minecraft:netherite_ingot"},"G":{"item":"cobblemon:electric_gem"},"B":{"item":"minecraft:nether_brick"},"C":{"item":"minecraft:brick"}},
+  "result":{"id":"nbp_cobble_plus:urn_of_thunder","count":1}
+}

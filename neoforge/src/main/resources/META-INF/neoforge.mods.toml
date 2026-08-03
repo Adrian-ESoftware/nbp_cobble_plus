@@ -11,6 +11,9 @@ description = '''
 Mod oficial do Time NBP para adicionar e configurar conteudos adicionais no modpack Cobblemon.
 '''
 
+[[mixins]]
+config = "nbp_cobble_plus.mixins.json"
+
 [[dependencies.nbp_cobble_plus]]
 modId = "neoforge"
 type = "required"

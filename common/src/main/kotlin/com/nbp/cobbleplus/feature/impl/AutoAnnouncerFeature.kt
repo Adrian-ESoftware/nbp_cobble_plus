@@ -3,6 +3,7 @@ package com.nbp.cobbleplus.feature.impl
 import com.nbp.cobbleplus.config.NbpConfig
 import com.nbp.cobbleplus.feature.FeatureModule
 import net.minecraft.network.chat.Component
+import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.server.MinecraftServer
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -44,19 +45,21 @@ object AutoAnnouncerFeature : FeatureModule {
         val config = NbpConfig.data.announcer
         if (!config.enabled || config.messages.isEmpty()) return
 
+        val selectedIndex: Int
         val message = if (config.announceInRandomOrder) {
-            config.messages[Random.nextInt(config.messages.size)]
+            selectedIndex = Random.nextInt(config.messages.size)
+            config.messages[selectedIndex]
         } else {
+            selectedIndex = messageIndex % config.messages.size
             val msg = config.messages[messageIndex % config.messages.size]
             messageIndex = (messageIndex + 1) % config.messages.size
             msg
         }
 
         server.execute {
-            server.playerList.broadcastSystemMessage(
-                Component.literal(message),
-                false
-            )
+            server.playerList.players.forEach { player ->
+                player.sendSystemMessage(Component.literal(PlayerLanguage.template(player, "announcer.$selectedIndex", message)))
+            }
         }
     }
 

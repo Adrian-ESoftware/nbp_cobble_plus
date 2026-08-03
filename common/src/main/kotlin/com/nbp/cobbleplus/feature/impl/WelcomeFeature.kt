@@ -3,6 +3,7 @@ package com.nbp.cobbleplus.feature.impl
 import com.nbp.cobbleplus.config.NbpConfig
 import com.nbp.cobbleplus.feature.FeatureModule
 import net.minecraft.network.chat.Component
+import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.server.level.ServerPlayer
 import java.util.UUID
 
@@ -22,10 +23,12 @@ object WelcomeFeature : FeatureModule {
         joinedPlayers.add(player.uuid)
 
         if (isFirstJoin && config.enableFirstJoinMessage) {
-            val msg = config.firstJoinChatMessage.replace("{player}", player.name.string)
-            player.server.playerList.broadcastSystemMessage(Component.literal(msg), false)
+            player.server.playerList.players.forEach { recipient ->
+                val msg = PlayerLanguage.template(recipient, "welcome.first", config.firstJoinChatMessage, "player" to player.name.string)
+                recipient.sendSystemMessage(Component.literal(msg))
+            }
         } else if (config.chatMessage.isNotBlank()) {
-            val msg = config.chatMessage.replace("{player}", player.name.string)
+            val msg = PlayerLanguage.template(player, "welcome.normal", config.chatMessage, "player" to player.name.string)
             player.sendSystemMessage(Component.literal(msg))
         }
     }

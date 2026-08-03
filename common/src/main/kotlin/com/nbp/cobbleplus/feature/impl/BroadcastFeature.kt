@@ -5,6 +5,7 @@ import com.cobblemon.mod.common.api.reactive.ObservableSubscription
 import com.nbp.cobbleplus.config.NbpConfig
 import com.nbp.cobbleplus.feature.FeatureModule
 import net.minecraft.network.chat.Component
+import com.nbp.cobbleplus.i18n.PlayerLanguage
 
 object BroadcastFeature : FeatureModule {
     override val name: String = "Broadcasts Cobblemon"
@@ -26,20 +27,14 @@ object BroadcastFeature : FeatureModule {
             val level = pokemon.level
 
             if (pokemon.shiny && config.enableShinyCaptureBroadcast) {
-                val formattedMsg = config.shinyCaptureMessage
-                    .replace("{player}", playerName)
-                    .replace("{pokemon}", speciesName)
-                    .replace("{level}", level.toString())
-
-                player.server.playerList.broadcastSystemMessage(
-                    Component.literal(formattedMsg),
-                    false
-                )
+                player.server.playerList.players.forEach { recipient ->
+                    val message = PlayerLanguage.template(recipient, "broadcast.shiny", config.shinyCaptureMessage,
+                        "player" to playerName, "pokemon" to speciesName, "level" to level)
+                    recipient.sendSystemMessage(Component.literal(message))
+                }
             } else if (config.enableCaptureBroadcast) {
-                val formattedMsg = config.captureMessage
-                    .replace("{player}", playerName)
-                    .replace("{pokemon}", speciesName)
-                    .replace("{level}", level.toString())
+                val formattedMsg = PlayerLanguage.template(player, "broadcast.capture", config.captureMessage,
+                    "player" to playerName, "pokemon" to speciesName, "level" to level)
 
                 player.sendSystemMessage(Component.literal(formattedMsg))
             }
@@ -51,14 +46,11 @@ object BroadcastFeature : FeatureModule {
             if (config.enableStarterBroadcast) {
                 val player = event.player
                 val pokemon = event.pokemon
-                val formattedMsg = config.starterMessage
-                    .replace("{player}", player.name.string)
-                    .replace("{pokemon}", pokemon.species.name)
-
-                player.server.playerList.broadcastSystemMessage(
-                    Component.literal(formattedMsg),
-                    false
-                )
+                player.server.playerList.players.forEach { recipient ->
+                    val message = PlayerLanguage.template(recipient, "broadcast.starter", config.starterMessage,
+                        "player" to player.name.string, "pokemon" to pokemon.species.name)
+                    recipient.sendSystemMessage(Component.literal(message))
+                }
             }
         }
     }

@@ -4,6 +4,7 @@ import com.nbp.cobbleplus.NbpCobblePlus
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.resources.ResourceLocation
 
 /**
  * Pacote S2C com as linhas de texto do HUD do combo de capturas.
@@ -18,8 +19,9 @@ data class CatchComboSyncPayload(val lines: List<String>) : CustomPacketPayload 
     }
 
     companion object {
-        val TYPE: CustomPacketPayload.Type<CatchComboSyncPayload> =
-            CustomPacketPayload.createType("${NbpCobblePlus.MOD_ID}:catch_combo_sync")
+        val TYPE: CustomPacketPayload.Type<CatchComboSyncPayload> = CustomPacketPayload.Type(
+            ResourceLocation.fromNamespaceAndPath(NbpCobblePlus.MOD_ID, "catch_combo_sync")
+        )
 
         val CODEC: StreamCodec<FriendlyByteBuf, CatchComboSyncPayload> =
             CustomPacketPayload.codec(CatchComboSyncPayload::write, ::decode)

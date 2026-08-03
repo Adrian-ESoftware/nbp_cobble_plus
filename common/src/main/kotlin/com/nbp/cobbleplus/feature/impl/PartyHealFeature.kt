@@ -4,6 +4,7 @@ import com.cobblemon.mod.common.Cobblemon
 import com.nbp.cobbleplus.config.NbpConfig
 import com.nbp.cobbleplus.feature.FeatureModule
 import net.minecraft.network.chat.Component
+import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.server.level.ServerPlayer
 import java.util.UUID
 
@@ -16,7 +17,7 @@ object PartyHealFeature : FeatureModule {
 
     fun executeHeal(player: ServerPlayer): Boolean {
         if (!isEnabled) {
-            player.sendSystemMessage(Component.literal("§c[NBP] O comando de cura de party está desativado no servidor."))
+            player.displayClientMessage(PlayerLanguage.text(player, "party.disabled"), true)
             return false
         }
 
@@ -28,8 +29,8 @@ object PartyHealFeature : FeatureModule {
 
         if (timePassed < cooldownMs) {
             val secondsLeft = ((cooldownMs - timePassed) / 1000L).coerceAtLeast(1)
-            val msg = config.cooldownMessage.replace("{seconds}", secondsLeft.toString())
-            player.sendSystemMessage(Component.literal(msg))
+            val msg = PlayerLanguage.template(player, "party.cooldown", config.cooldownMessage, "seconds" to secondsLeft)
+            player.displayClientMessage(Component.literal(msg), true)
             return false
         }
 
@@ -37,10 +38,10 @@ object PartyHealFeature : FeatureModule {
             val party = Cobblemon.storage.getParty(player)
             party.heal()
             cooldowns[player.uuid] = now
-            player.sendSystemMessage(Component.literal(config.healMessage))
+            player.displayClientMessage(Component.literal(PlayerLanguage.template(player, "party.healed", config.healMessage)), true)
             return true
         } catch (e: Exception) {
-            player.sendSystemMessage(Component.literal("§c[NBP] Ocorreu um erro ao tentar curar sua equipe Pokémon."))
+            player.displayClientMessage(PlayerLanguage.text(player, "party.error"), true)
             e.printStackTrace()
             return false
         }

@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "nbp_cobble_plus:sinooh_temple",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 72643191,
+    "spacing": 96,
+    "separation": 32
+  }
+}

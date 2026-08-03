@@ -7,6 +7,14 @@ import com.nbp.cobbleplus.feature.impl.BroadcastFeature
 import com.nbp.cobbleplus.feature.impl.CatchComboFeature
 import com.nbp.cobbleplus.feature.impl.PartyHealFeature
 import com.nbp.cobbleplus.feature.impl.WelcomeFeature
+import com.nbp.cobbleplus.feature.impl.VanillaMobSpawnBlockerFeature
+import com.nbp.cobbleplus.feature.impl.LegendarySpawnerFeature
+import com.nbp.cobbleplus.feature.impl.MeltanFurnaceFeature
+import com.nbp.cobbleplus.feature.impl.ItemMechanicsFeature
+import com.nbp.cobbleplus.feature.impl.PokemonLootModifierFeature
+import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
+import com.nbp.cobbleplus.feature.impl.PokemonApiaryFeature
+import com.nbp.cobbleplus.config.PokemonLootConfig
 import org.slf4j.LoggerFactory
 
 object NbpCobblePlus {
@@ -20,6 +28,7 @@ object NbpCobblePlus {
         
         // Carrega configurações
         NbpConfig.load()
+        PokemonLootConfig.load()
 
         // Registra módulos
         FeatureManager.register(BroadcastFeature)
@@ -27,6 +36,13 @@ object NbpCobblePlus {
         FeatureManager.register(AutoAnnouncerFeature)
         FeatureManager.register(PartyHealFeature)
         FeatureManager.register(CatchComboFeature)
+        FeatureManager.register(CaptureCapFeature)
+        FeatureManager.register(VanillaMobSpawnBlockerFeature)
+        FeatureManager.register(LegendarySpawnerFeature)
+        FeatureManager.register(MeltanFurnaceFeature)
+        FeatureManager.register(ItemMechanicsFeature)
+        FeatureManager.register(PokemonLootModifierFeature)
+        FeatureManager.register(PokemonApiaryFeature)
 
         // Inicializa módulos
         FeatureManager.initAll()

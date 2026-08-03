@@ -9,6 +9,7 @@
 build/
 .gradletasknamecache
 gradle-app.setting
+.claude/
 
 # --- Preservar o Gradle Wrapper ---
 !gradle/wrapper/gradle-wrapper.jar

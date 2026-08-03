@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": "nbp_cobble_plus:ruby_ore",
+  "step": "underground_ores"
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "nbp_cobble_plus:used_palkia_block",
+    "nbp_cobble_plus:used_dialga_block",
+    "nbp_cobble_plus:used_giratina_block",
+    "nbp_cobble_plus:used_arceus_chalice"
+  ]
+}
