@@ -94,6 +94,7 @@ class NbpCobblePlusFabric : ModInitializer {
 
         ServerTickEvents.END_SERVER_TICK.register { server ->
             VanillaMobSpawnBlockerFeature.flushPendingDiscards()
+            VanillaMobSpawnBlockerFeature.tickBossReplacements(server)
             LegendarySpawnerFeature.tick(server)
             RitualBlocksFeature.tick(server)
             ItemMechanicsFeature.tick(server)

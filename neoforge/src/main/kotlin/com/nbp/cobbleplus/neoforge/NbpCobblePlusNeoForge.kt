@@ -88,6 +88,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
 
         NeoForge.EVENT_BUS.addListener { event: ServerTickEvent.Post ->
             VanillaMobSpawnBlockerFeature.flushPendingDiscards()
+            VanillaMobSpawnBlockerFeature.tickBossReplacements(event.server)
             LegendarySpawnerFeature.tick(event.server)
             RitualBlocksFeature.tick(event.server)
             ItemMechanicsFeature.tick(event.server)

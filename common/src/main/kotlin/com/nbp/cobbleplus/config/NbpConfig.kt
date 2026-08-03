@@ -61,6 +61,9 @@ data class VanillaMobSpawnBlockerConfig(
     var replacementRadius: Double = 16.0,
     var maxNearbyReplacements: Int = 12,
     var replacementLevelVariance: Int = 5,
+    var endRayquazaContainmentRadius: Double = 128.0,
+    var endRayquazaMinimumY: Double = 48.0,
+    var endRayquazaMaximumY: Double = 220.0,
     var pokemonReplacements: Map<String, List<String>> = mapOf(
         "minecraft:iron_golem" to listOf("species=golurk level=35", "species=golett level=25"),
         "minecraft:snow_golem" to listOf("species=vanillite level=15", "species=vanillish level=20", "species=cryogonal level=25", "species=snom level=12"),
@@ -78,7 +81,9 @@ data class VanillaMobSpawnBlockerConfig(
         "minecraft:breeze" to listOf("species=rotom level=25", "species=castform level=22", "species=kilowattrel level=24", "species=drifloon level=20", "species=emolga level=20"),
         "minecraft:magma_cube" to listOf("species=slugma level=15", "species=magcargo level=25", "species=solosis level=15", "species=goomy level=16", "species=ditto level=18"),
         "minecraft:slime" to listOf("species=solosis level=12", "species=goomy level=14", "species=ditto level=16", "species=reuniclus level=28", "species=grimer level=16"),
-        "minecraft:witch" to listOf("species=mismagius level=28", "species=hattrem level=22", "species=murkrow level=20", "species=impidimp level=18", "species=misdreavus level=20")
+        "minecraft:witch" to listOf("species=mismagius level=28", "species=hattrem level=22", "species=murkrow level=20", "species=impidimp level=18", "species=misdreavus level=20"),
+        "minecraft:wither" to listOf("species=necrozma level=75"),
+        "minecraft:ender_dragon" to listOf("species=rayquaza level=75")
     )
 )
 
@@ -134,7 +139,6 @@ private fun defaultLegendaryPool(): List<LegendarySpawnEntry> = listOf(
     dimensionalLegend("heatran", "minecraft:the_nether", listOf("minecraft:basalt_deltas", "minecraft:nether_wastes")),
     dimensionalLegend("volcanion", "minecraft:the_nether", listOf("minecraft:basalt_deltas", "minecraft:nether_wastes")),
     dimensionalLegend("cosmog", "minecraft:the_end", listOf("minecraft:end_highlands", "minecraft:end_midlands", "minecraft:small_end_islands")),
-    dimensionalLegend("necrozma", "minecraft:the_end", listOf("minecraft:end_highlands", "minecraft:end_barrens", "minecraft:small_end_islands")),
     dimensionalLegend("ironboulder", "minecraft:the_end", listOf("minecraft:end_highlands", "minecraft:end_midlands")),
     dimensionalLegend("ironcrown", "minecraft:the_end", listOf("minecraft:end_highlands", "minecraft:end_midlands")),
     dimensionalLegend("deoxys", "minecraft:the_end", listOf("minecraft:end_barrens", "minecraft:small_end_islands")),
@@ -281,6 +285,7 @@ object NbpConfig {
                 FileReader(configFile).use { reader ->
                     data = gson.fromJson(reader, ModConfigData::class.java) ?: ModConfigData()
                 }
+                if (addMissingBossReplacements()) save()
             } else {
                 save()
             }
@@ -288,6 +293,22 @@ object NbpConfig {
             e.printStackTrace()
             data = ModConfigData()
         }
+    }
+
+    private fun addMissingBossReplacements(): Boolean {
+        val config = data.vanillaMobSpawnBlocker
+        val replacements = config.pokemonReplacements.toMutableMap()
+        var changed = false
+        if ("minecraft:wither" !in replacements) {
+            replacements["minecraft:wither"] = listOf("species=necrozma level=75")
+            changed = true
+        }
+        if ("minecraft:ender_dragon" !in replacements) {
+            replacements["minecraft:ender_dragon"] = listOf("species=rayquaza level=75")
+            changed = true
+        }
+        if (changed) config.pokemonReplacements = replacements
+        return changed
     }
 
     fun save() {

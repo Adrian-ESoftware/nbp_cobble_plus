@@ -29,6 +29,9 @@ object CaptureCapFeature : FeatureModule {
             val level = event.pokemon.pokemon.level
             val cap = getCap(player)
             if (level > cap) {
+                // In battle Cobblemon creates BattleCaptureAction before posting this event.
+                // Completing the future releases the forced pass/turn when the hit is rejected.
+                event.pokeBall.captureFuture.complete(false)
                 event.cancel()
                 player.displayClientMessage(PlayerLanguage.text(player, "capture_cap.too_high", "level" to level, "cap" to cap), true)
             }

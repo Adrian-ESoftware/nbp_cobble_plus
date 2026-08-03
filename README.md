@@ -64,6 +64,7 @@ O mod adota um sistema de **Módulos Independentes**. Cada funcionalidade do ser
    - Origens especiais podem substituir o mob bloqueado por Pokémon temáticos: golem de ferro por Golurk, blocos infestados por Pokémon inseto e spawners de aranha, zumbi, esqueleto, blaze e magma cube por listas configuráveis de Pokémon semelhantes.
    - `pokemonReplacements` aceita propriedades completas do Cobblemon, permitindo definir espécie, nível, forma, shiny e outras características.
    - O nível informado em cada entrada funciona como nível-base. `replacementLevelVariance` sorteia uma variação para cima ou para baixo (por padrão ±5), portanto os Pokémon não surgem sempre no mesmo nível.
+   - A construção do Wither invoca Necrozma no lugar dele. O Ender Dragon é substituído por Rayquaza; somente esse Rayquaza especial fica contido na ilha central. Derrotá-lo, capturá-lo ou removê-lo conclui oficialmente a luta, abre o portal e concede a progressão do dragão aos jogadores próximos.
    - `maxNearbyReplacements` limita os Pokémon equivalentes próximos e impede acúmulo infinito causado por spawners. O padrão é 12 por grupo em um raio de 16 blocos, mantendo spawners povoados sem sobrecarregar os ticks de IA.
    - Trial Spawners contabilizam a tentativa e respeitam seu intervalo normal mesmo quando o teto local já foi alcançado, evitando tentativas de substituição a cada tick.
    - Nas Trial Chambers, o Pokémon herda o UUID acompanhado pelo Trial Spawner. A recompensa só é liberada depois que os Pokémon forem removidos — por derrota, dano direto, captura ou despawn.

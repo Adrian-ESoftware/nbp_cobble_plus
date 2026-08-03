@@ -11,6 +11,7 @@
     ,"FurnaceResultSlotMixin"
     ,"BeehiveBlockEntityMixin"
     ,"PokemonPastureBlockEntityMixin"
+    ,"EndDragonFightAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
