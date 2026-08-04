@@ -1,0 +1,11 @@
+{
+  "type": "nbp_cobble_plus:safari_zone",
+  "generator": {
+    "type": "minecraft:noise",
+    "settings": "minecraft:nether",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "minecraft:warped_forest"
+    }
+  }
+}

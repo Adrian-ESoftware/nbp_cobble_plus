@@ -162,7 +162,7 @@ private object RaidDensEconomyBridge {
     }
 }
 
-private object CobbleDollarsBridge {
+internal object CobbleDollarsBridge {
     private val apiClass by lazy { Class.forName("fr.harmex.cobbledollars.common.utils.extensions.PlayerExtensionKt") }
     private val earnMethod by lazy {
         runCatching {
@@ -184,6 +184,42 @@ private object CobbleDollarsBridge {
         val accepted = earnMethod?.invoke(null, player, BigInteger.valueOf(amount), multiplier) as? Boolean ?: false
         if (!accepted) 0L else balance(player).subtract(before).max(BigInteger.ZERO).min(BigInteger.valueOf(Long.MAX_VALUE)).toLong()
     }.onFailure { NbpCobblePlus.logger.error("Failed to credit CobbleDollars to ${player.scoreboardName}", it) }.getOrDefault(0L)
+
+    fun spend(player: ServerPlayer, amount: Long): Boolean = runCatching {
+        val current = balance(player)
+        val required = BigInteger.valueOf(amount)
+        if (current < required) return false
+
+        // 1. Tentar métodos de gasto/consumo do CobbleDollars
+        val spendMethod = apiClass.methods.firstOrNull {
+            (it.name == "consumeCobbleDollars" || it.name == "spendCobbleDollars" ||
+             it.name == "takeCobbleDollars" || it.name == "removeCobbleDollars" ||
+             it.name == "payCobbleDollars") && it.parameterCount == 2
+        }
+        if (spendMethod != null) {
+            val result = spendMethod.invoke(null, player, required)
+            if (result is Boolean) return result
+            return true
+        }
+
+        // 2. Fallback via setCobbleDollars
+        val setMethod = apiClass.methods.firstOrNull {
+            (it.name == "setCobbleDollars" || it.name == "setBalance") && it.parameterCount == 2
+        }
+        if (setMethod != null) {
+            val newBalance = current.subtract(required).max(BigInteger.ZERO)
+            setMethod.invoke(null, player, newBalance)
+            return true
+        }
+
+        // 3. Fallback via earnMethod com valor negativo
+        if (earnMethod != null) {
+            val accepted = earnMethod?.invoke(null, player, required.negate(), false) as? Boolean ?: false
+            if (accepted) return true
+        }
+
+        false
+    }.onFailure { NbpCobblePlus.logger.error("Failed to deduct $amount CobbleDollars from ${player.scoreboardName}", it) }.getOrDefault(false)
 
     fun disableNativeRewards(): Boolean = runCatching {
             val mainClass = Class.forName("fr.harmex.cobbledollars.common.CobbleDollars")

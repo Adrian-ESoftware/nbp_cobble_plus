@@ -99,6 +99,7 @@ class NbpCobblePlusFabric : ModInitializer {
             RitualBlocksFeature.tick(server)
             ItemMechanicsFeature.tick(server)
             com.nbp.cobbleplus.feature.impl.EconomyFeature.tick(server)
+            com.nbp.cobbleplus.feature.impl.SafariZoneFeature.tick(server)
         }
 
         ServerLifecycleEvents.SERVER_STARTING.register { server ->

@@ -281,6 +281,38 @@ data class EconomyConfig(
     var raidDensRewardsByTier: List<Int> = listOf(200, 400, 750, 1250, 4500, 10000, 20000)
 )
 
+data class SafariZoneConfig(
+    var enabled: Boolean = true,
+    var dimension: String = "nbp_cobble_plus:safari_zone",
+    var ticketPrice: Long = 2500,
+    var sessionDurationMinutes: Int = 15,
+    var shinyMultiplier: Double = 4.0,
+    var perfectIvCount: Int = 2,
+    var uncommonSpawnMultiplier: Float = 5.0f,
+    var rareSpawnMultiplier: Float = 8.0f,
+    var ultraRareSpawnMultiplier: Float = 10.0f,
+    var randomSpawnMinRadius: Int = 200,
+    var randomSpawnMaxRadius: Int = 1000,
+    var announceEntry: Boolean = true,
+    var entryMessage: String = "§a[Safari] §e{player} §fentered the Safari Zone!",
+    var exitMessage: String = "§c[Safari] Your Safari Zone session has ended.",
+    var tickActionBarFormat: String = "§a[Safari Zone] §fTime remaining: §e{time} §7| Use §c/safari exit §7to leave",
+    var biomePrices: MutableMap<String, Long> = mutableMapOf(
+        "plains" to 2500L, "sunflower_plains" to 2500L, "forest" to 2500L, "flower_forest" to 2500L,
+        "birch_forest" to 2500L, "dark_forest" to 2500L, "taiga" to 2500L, "snowy_taiga" to 2500L,
+        "jungle" to 2500L, "bamboo_jungle" to 2500L, "savanna" to 2500L, "desert" to 2500L,
+        "badlands" to 2500L, "swamp" to 2500L, "mangrove_swamp" to 2500L, "cherry_grove" to 2500L,
+        "meadow" to 2500L, "grove" to 2500L, "snowy_slopes" to 2500L, "jagged_peaks" to 2500L,
+        "frozen_peaks" to 2500L, "stony_peaks" to 2500L, "windswept_hills" to 2500L, "ocean" to 2500L,
+        "warm_ocean" to 2500L, "frozen_ocean" to 2500L, "beach" to 2500L, "snowy_beach" to 2500L,
+        "stony_shore" to 2500L, "river" to 2500L, "mushroom_fields" to 2500L, "lush_caves" to 2500L,
+        "dripstone_caves" to 2500L, "nether_wastes" to 3500L, "crimson_forest" to 3500L,
+        "warped_forest" to 3500L, "soul_sand_valley" to 3500L, "basalt_deltas" to 3500L,
+        "the_end" to 3500L, "end_highlands" to 3500L, "end_midlands" to 3500L, "end_barrens" to 3500L,
+        "small_end_islands" to 3500L, "random" to 2500L
+    )
+)
+
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
@@ -292,7 +324,8 @@ data class ModConfigData(
     var catchCombo: CatchComboConfig = CatchComboConfig(),
     var captureCap: CaptureCapConfig = CaptureCapConfig(),
     var pokemonApiary: PokemonApiaryConfig = PokemonApiaryConfig(),
-    var economy: EconomyConfig = EconomyConfig()
+    var economy: EconomyConfig = EconomyConfig(),
+    var safariZone: SafariZoneConfig = SafariZoneConfig()
 )
 
 object NbpConfig {

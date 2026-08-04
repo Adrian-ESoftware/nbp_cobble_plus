@@ -11,6 +11,7 @@ import com.nbp.cobbleplus.feature.impl.PartyHealFeature
 import com.nbp.cobbleplus.feature.impl.LegendarySpawnerFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.EconomyFeature
+import com.nbp.cobbleplus.feature.impl.SafariZoneFeature
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
@@ -278,6 +279,39 @@ object NbpCommands {
                     )
             )
             .then(
+                Commands.literal("safari")
+                    .executes { context ->
+                        val player = context.source.player
+                        if (player != null) SafariZoneFeature.openSafariGui(player) else context.source.sendFailure(Component.literal("Apenas jogadores."))
+                        1
+                    }
+                    .then(
+                        Commands.literal("enter").executes { context ->
+                            val player = context.source.player
+                            if (player != null) SafariZoneFeature.openSafariGui(player) else context.source.sendFailure(Component.literal("Apenas jogadores."))
+                            1
+                        }
+                    )
+                    .then(
+                        Commands.literal("exit").executes { context ->
+                            val player = context.source.player
+                            if (player != null) SafariZoneFeature.exitSafari(player) else context.source.sendFailure(Component.literal("Apenas jogadores."))
+                            1
+                        }
+                    )
+                    .then(
+                        Commands.literal("setspawn")
+                            .requires { source -> source.hasPermission(2) }
+                            .executes { context ->
+                                val player = context.source.player
+                                if (player != null) {
+                                    player.sendSystemMessage(PlayerLanguage.text(player, "safari.setspawn_info"))
+                                }
+                                1
+                            }
+                    )
+            )
+            .then(
                 Commands.literal("announce")
                     .requires { source -> source.hasPermission(2) }
                     .executes { context ->
@@ -302,6 +336,30 @@ object NbpCommands {
             )
 
         dispatcher.register(root)
+
+        // Atalhos diretos /safari, /safari enter e /safari exit
+        dispatcher.register(
+            Commands.literal("safari")
+                .executes { context ->
+                    val player = context.source.player
+                    if (player != null) SafariZoneFeature.openSafariGui(player) else context.source.sendFailure(Component.literal("Apenas jogadores."))
+                    1
+                }
+                .then(
+                    Commands.literal("enter").executes { context ->
+                        val player = context.source.player
+                        if (player != null) SafariZoneFeature.openSafariGui(player) else context.source.sendFailure(Component.literal("Apenas jogadores."))
+                        1
+                    }
+                )
+                .then(
+                    Commands.literal("exit").executes { context ->
+                        val player = context.source.player
+                        if (player != null) SafariZoneFeature.exitSafari(player) else context.source.sendFailure(Component.literal("Apenas jogadores."))
+                        1
+                    }
+                )
+        )
 
         // Registrar também o atalho /pokeheal se o módulo PartyHeal estiver ativado
         dispatcher.register(
