@@ -1,0 +1,336 @@
+[
+  {
+    "name": "Poké Balls",
+    "offers": [
+      {
+        "item": "cobblemon:poke_ball",
+        "price": "75"
+      },
+      {
+        "item": "cobblemon:premier_ball",
+        "price": "90"
+      },
+      {
+        "item": "cobblemon:great_ball",
+        "price": "220"
+      },
+      {
+        "item": "cobblemon:ultra_ball",
+        "price": "500"
+      },
+      {
+        "item": "cobblemon:heal_ball",
+        "price": "350"
+      },
+      {
+        "item": "cobblemon:safari_ball",
+        "price": "650"
+      },
+      {
+        "item": "cobblemon:fast_ball",
+        "price": "750"
+      },
+      {
+        "item": "cobblemon:level_ball",
+        "price": "750"
+      },
+      {
+        "item": "cobblemon:lure_ball",
+        "price": "750"
+      },
+      {
+        "item": "cobblemon:heavy_ball",
+        "price": "750"
+      },
+      {
+        "item": "cobblemon:love_ball",
+        "price": "750"
+      },
+      {
+        "item": "cobblemon:friend_ball",
+        "price": "750"
+      },
+      {
+        "item": "cobblemon:moon_ball",
+        "price": "750"
+      },
+      {
+        "item": "cobblemon:sport_ball",
+        "price": "900"
+      },
+      {
+        "item": "cobblemon:net_ball",
+        "price": "900"
+      },
+      {
+        "item": "cobblemon:dive_ball",
+        "price": "900"
+      },
+      {
+        "item": "cobblemon:nest_ball",
+        "price": "900"
+      },
+      {
+        "item": "cobblemon:repeat_ball",
+        "price": "1100"
+      },
+      {
+        "item": "cobblemon:timer_ball",
+        "price": "1100"
+      },
+      {
+        "item": "cobblemon:dusk_ball",
+        "price": "1100"
+      },
+      {
+        "item": "cobblemon:quick_ball",
+        "price": "1400"
+      },
+      {
+        "item": "cobblemon:dream_ball",
+        "price": "1600"
+      },
+      {
+        "item": "cobblemon:luxury_ball",
+        "price": "2500"
+      },
+      {
+        "item": "cobblemon:beast_ball",
+        "price": "12000",
+        "stock": 3
+      },
+      {
+        "item": "cobblemon:master_ball",
+        "price": "250000",
+        "stock": 1
+      }
+    ]
+  },
+  {
+    "name": "Medicine",
+    "offers": [
+      {
+        "item": "cobblemon:potion",
+        "price": "60"
+      },
+      {
+        "item": "cobblemon:super_potion",
+        "price": "180"
+      },
+      {
+        "item": "cobblemon:hyper_potion",
+        "price": "450"
+      },
+      {
+        "item": "cobblemon:max_potion",
+        "price": "900"
+      },
+      {
+        "item": "cobblemon:revive",
+        "price": "650"
+      },
+      {
+        "item": "cobblemon:max_revive",
+        "price": "2000"
+      }
+    ]
+  },
+  {
+    "name": "Training",
+    "offers": [
+      {
+        "item": "cobblemon:exp_candy_xs",
+        "price": "100"
+      },
+      {
+        "item": "cobblemon:exp_candy_s",
+        "price": "500"
+      },
+      {
+        "item": "cobblemon:exp_candy_m",
+        "price": "2200"
+      },
+      {
+        "item": "cobblemon:exp_candy_l",
+        "price": "8000"
+      },
+      {
+        "item": "cobblemon:exp_candy_xl",
+        "price": "28000"
+      },
+      {
+        "item": "cobblemon:rare_candy",
+        "price": "15000"
+      },
+      {
+        "item": "cobblemon:exp_share",
+        "price": "60000",
+        "stock": 1
+      },
+      {
+        "item": "cobblemon:adamant_mint",
+        "price": "6000"
+      },
+      {
+        "item": "cobblemon:modest_mint",
+        "price": "6000"
+      },
+      {
+        "item": "cobblemon:jolly_mint",
+        "price": "6000"
+      },
+      {
+        "item": "cobblemon:timid_mint",
+        "price": "6000"
+      },
+      {
+        "item": "cobblemon:bold_mint",
+        "price": "6000"
+      },
+      {
+        "item": "cobblemon:calm_mint",
+        "price": "6000"
+      },
+      {
+        "item": "cobblemon:careful_mint",
+        "price": "6000"
+      },
+      {
+        "item": "cobblemon:impish_mint",
+        "price": "6000"
+      },
+      {
+        "item": "cobblemon:ability_capsule",
+        "price": "18000"
+      },
+      {
+        "item": "cobblemon:ability_patch",
+        "price": "60000",
+        "stock": 2
+      }
+    ]
+  },
+  {
+    "name": "Evolution",
+    "offers": [
+      {
+        "item": "cobblemon:fire_stone",
+        "price": "3000"
+      },
+      {
+        "item": "cobblemon:water_stone",
+        "price": "3000"
+      },
+      {
+        "item": "cobblemon:thunder_stone",
+        "price": "3000"
+      },
+      {
+        "item": "cobblemon:leaf_stone",
+        "price": "3000"
+      },
+      {
+        "item": "cobblemon:ice_stone",
+        "price": "3500"
+      },
+      {
+        "item": "cobblemon:moon_stone",
+        "price": "3500"
+      },
+      {
+        "item": "cobblemon:sun_stone",
+        "price": "3500"
+      },
+      {
+        "item": "cobblemon:dawn_stone",
+        "price": "4500"
+      },
+      {
+        "item": "cobblemon:dusk_stone",
+        "price": "4500"
+      },
+      {
+        "item": "cobblemon:shiny_stone",
+        "price": "4500"
+      },
+      {
+        "item": "cobblemon:link_cable",
+        "price": "5000"
+      },
+      {
+        "item": "cobblemon:metal_coat",
+        "price": "6500"
+      },
+      {
+        "item": "cobblemon:protector",
+        "price": "6500"
+      },
+      {
+        "item": "cobblemon:electirizer",
+        "price": "8000"
+      },
+      {
+        "item": "cobblemon:magmarizer",
+        "price": "8000"
+      },
+      {
+        "item": "cobblemon:razor_claw",
+        "price": "7500"
+      },
+      {
+        "item": "cobblemon:razor_fang",
+        "price": "7500"
+      },
+      {
+        "item": "cobblemon:dragon_scale",
+        "price": "9000"
+      },
+      {
+        "item": "cobblemon:prism_scale",
+        "price": "9000"
+      },
+      {
+        "item": "cobblemon:auspicious_armor",
+        "price": "14000"
+      },
+      {
+        "item": "cobblemon:malicious_armor",
+        "price": "14000"
+      }
+    ]
+  },
+  {
+    "name": "Trainer Util.",
+    "offers": [
+      {
+        "item": "cobblemon:pc",
+        "price": "12000"
+      },
+      {
+        "item": "cobblemon:healing_machine",
+        "price": "18000"
+      },
+      {
+        "item": "cobblemon:pasture",
+        "price": "25000"
+      },
+      {
+        "item": "cobblemon:poke_rod",
+        "price": "2500"
+      },
+      {
+        "item": "cobblemon:great_rod",
+        "price": "8000"
+      },
+      {
+        "item": "cobblemon:ultra_rod",
+        "price": "25000"
+      },
+      {
+        "item": "cobblemon:master_rod",
+        "price": "90000",
+        "stock": 1
+      }
+    ]
+  }
+]

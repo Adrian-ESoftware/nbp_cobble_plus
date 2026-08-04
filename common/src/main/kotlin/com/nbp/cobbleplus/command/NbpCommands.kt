@@ -10,6 +10,7 @@ import com.nbp.cobbleplus.feature.impl.CatchComboFeature
 import com.nbp.cobbleplus.feature.impl.PartyHealFeature
 import com.nbp.cobbleplus.feature.impl.LegendarySpawnerFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
+import com.nbp.cobbleplus.feature.impl.EconomyFeature
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
@@ -41,6 +42,7 @@ object NbpCommands {
                                 "§e/nbp combo reset §7- Reseta seu combo de capturas\n" +
                                 "§e/nbp combo hud §7- Mostra/esconde o HUD do combo na tela\n" +
                                 "§e/nbp capturecap §7- Mostra seu limite de captura\n" +
+                                "§e/nbp economy §7- Mostra seus ganhos e limite diário\n" +
                                 "§e/nbp legendary test [espécie] §7- Testa um spawn lendário (Admin)\n" +
                                 "§e/nbp legendary test-natural §7- Executa o sorteio natural completo (Admin)\n" +
                                 "§e/nbp legendary chance §7- Mostra sua chance atual de anfitrião\n" +
@@ -248,6 +250,31 @@ object NbpCommands {
                                     val cap = CaptureCapFeature.resetCap(target)
                                     captureCapAdminFeedback(context.source, target, cap)
                                 })
+                    )
+            )
+            .then(
+                Commands.literal("economy")
+                    .requires { it.hasPermission(2) }
+                    .executes { context ->
+                        val player = context.source.player
+                        if (player == null) {
+                            context.source.sendFailure(PlayerLanguage.text(null, "player.only")); 0
+                        } else {
+                            val status = EconomyFeature.status(player)
+                            context.source.sendSuccess({ PlayerLanguage.text(player, "economy.status",
+                                "balance" to status.balance, "earned" to status.earnedToday, "cap" to status.dailyCap) }, false)
+                            1
+                        }
+                    }
+                    .then(
+                        Commands.literal("reset")
+                            .requires { it.hasPermission(2) }
+                            .then(Commands.argument("player", EntityArgument.player()).executes { context ->
+                                val target = EntityArgument.getPlayer(context, "player")
+                                EconomyFeature.reset(target)
+                                context.source.sendSuccess({ PlayerLanguage.text(context.source.player, "economy.reset", "player" to target.scoreboardName) }, true)
+                                1
+                            })
                     )
             )
             .then(

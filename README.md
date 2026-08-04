@@ -280,6 +280,10 @@ O sistema altera o `HONEY_LEVEL` vanilla, portanto garrafas, tesouras, dispenser
 
 Na primeira criação do arquivo, o mod inclui Nether Star para alguns lendários: Arceus (100%), Eternatus (75%), Necrozma (75%), Deoxys (50%) e Giratina (50%). Essas regras podem ser alteradas ou removidas normalmente.
 
+## 💰 Economia com CobbleDollars
+
+A arquitetura, fórmulas, proteções contra inflação, preços da loja e orientações para futuras integrações estão documentadas separadamente em [ECONOMY.md](ECONOMY.md).
+
 ## 💻 Comandos no Jogo
 
 | Comando | Permissão | Descrição |
@@ -297,6 +301,8 @@ Na primeira criação do arquivo, o mod inclui Nether Star para alguns lendário
 | `/nbp capturecap add <jogador> <níveis>` | Admin (Nível 2) | Aumenta o limite persistente do jogador. |
 | `/nbp capturecap set <jogador> <nível>` | Admin (Nível 2) | Define o limite persistente do jogador. |
 | `/nbp capturecap reset <jogador>` | Admin (Nível 2) | Remove o ajuste persistente e volta ao limite da configuração/conquistas. |
+| `/nbp economy` | Admin (Nível 2) | Compara o saldo CobbleDollars com quanto o NBP creditou no limite diário. |
+| `/nbp economy reset <jogador>` | Admin (Nível 2) | Reseta os dados econômicos persistidos do jogador. |
 | `/nbp legendary test` | Admin (Nível 2) | Força o sorteio e o spawn seguro de um lendário próximo ao executor. |
 | `/nbp legendary test <espécie>` | Admin (Nível 2) | Testa uma espécie específica válida para a dimensão atual, ignorando horário. |
 | `/nbp legendary test-natural` | Admin (Nível 2) | Executa o ciclo natural completo, sorteando dimensão, jogador, espécie e posição. |

@@ -1,0 +1,36 @@
+{
+  "note": "Reference only. Do not copy this file over default_shop.json. Add categories only when their mods are installed.",
+  "required_mods": ["waystones", "sophisticatedbackpacks"],
+  "categories": [
+    {
+      "name": "Travel",
+      "offers": [
+        { "item": "waystones:return_scroll", "price": "750" },
+        { "item": "waystones:warp_scroll", "price": "1800" },
+        { "item": "waystones:bound_scroll", "price": "3500" },
+        { "item": "waystones:warp_stone", "price": "12000" },
+        { "item": "waystones:waystone", "price": "30000" },
+        { "item": "waystones:warp_plate", "price": "75000", "stock": 1 }
+      ]
+    },
+    {
+      "name": "Backpacks",
+      "offers": [
+        { "item": "sophisticatedbackpacks:backpack", "price": "6000" },
+        { "item": "sophisticatedbackpacks:copper_backpack", "price": "14000" },
+        { "item": "sophisticatedbackpacks:iron_backpack", "price": "28000" },
+        { "item": "sophisticatedbackpacks:gold_backpack", "price": "50000" },
+        { "item": "sophisticatedbackpacks:diamond_backpack", "price": "90000" },
+        { "item": "sophisticatedbackpacks:netherite_backpack", "price": "175000", "stock": 1 },
+        { "item": "sophisticatedbackpacks:upgrade_base", "price": "4000" },
+        { "item": "sophisticatedbackpacks:crafting_upgrade", "price": "10000" },
+        { "item": "sophisticatedbackpacks:pickup_upgrade", "price": "14000" },
+        { "item": "sophisticatedbackpacks:magnet_upgrade", "price": "30000" },
+        { "item": "sophisticatedbackpacks:stack_upgrade_tier_1", "price": "35000" },
+        { "item": "sophisticatedbackpacks:stack_upgrade_tier_2", "price": "80000" },
+        { "item": "sophisticatedbackpacks:stack_upgrade_tier_3", "price": "160000", "stock": 1 },
+        { "item": "sophisticatedbackpacks:stack_upgrade_tier_4", "price": "320000", "stock": 1 }
+      ]
+    }
+  ]
+}

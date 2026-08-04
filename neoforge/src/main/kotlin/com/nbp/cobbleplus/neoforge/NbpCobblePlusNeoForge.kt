@@ -92,6 +92,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             LegendarySpawnerFeature.tick(event.server)
             RitualBlocksFeature.tick(event.server)
             ItemMechanicsFeature.tick(event.server)
+            com.nbp.cobbleplus.feature.impl.EconomyFeature.tick(event.server)
         }
 
         NeoForge.EVENT_BUS.addListener { event: PlayerInteractEvent.EntityInteract ->

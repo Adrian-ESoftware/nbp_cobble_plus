@@ -256,6 +256,31 @@ data class PokemonApiaryConfig(
     var vespiquenPastureMaximumDropTicks: Int = 7200
 )
 
+data class EconomyConfig(
+    var enabled: Boolean = true,
+    var disableNativeCobbleDollarsRewards: Boolean = true,
+    var rewardCaptures: Boolean = true,
+    var rewardWildVictories: Boolean = true,
+    var captureBase: Double = 8.0,
+    var capturePerLevel: Double = 0.35,
+    var defeatBase: Double = 5.0,
+    var defeatPerLevel: Double = 0.25,
+    var shinyMultiplier: Double = 3.0,
+    var legendaryMultiplier: Double = 4.0,
+    var maximumRewardPerPokemon: Long = 250,
+    var dailyEarningCap: Long = 5000,
+    var dailySoftCapStart: Long = 3000,
+    var softCapMultiplier: Double = 0.25,
+    var repeatWindowMinutes: Int = 30,
+    var fullRewardsPerSpeciesAndAction: Int = 5,
+    var repeatedRewardMultiplier: Double = 0.20,
+    var applyCobbleDollarsGlobalMultiplier: Boolean = false,
+    var showRewardActionBar: Boolean = true,
+    var legendaryBonusSpecies: List<String> = listOf("necrozma", "rayquaza"),
+    var configureRaidDensRewards: Boolean = true,
+    var raidDensRewardsByTier: List<Int> = listOf(200, 400, 750, 1250, 4500, 10000, 20000)
+)
+
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
@@ -266,7 +291,8 @@ data class ModConfigData(
     var legendarySpawner: LegendarySpawnerConfig = LegendarySpawnerConfig(),
     var catchCombo: CatchComboConfig = CatchComboConfig(),
     var captureCap: CaptureCapConfig = CaptureCapConfig(),
-    var pokemonApiary: PokemonApiaryConfig = PokemonApiaryConfig()
+    var pokemonApiary: PokemonApiaryConfig = PokemonApiaryConfig(),
+    var economy: EconomyConfig = EconomyConfig()
 )
 
 object NbpConfig {
@@ -285,7 +311,8 @@ object NbpConfig {
                 FileReader(configFile).use { reader ->
                     data = gson.fromJson(reader, ModConfigData::class.java) ?: ModConfigData()
                 }
-                if (addMissingBossReplacements()) save()
+                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults()
+                if (changed) save()
             } else {
                 save()
             }
@@ -309,6 +336,13 @@ object NbpConfig {
         }
         if (changed) config.pokemonReplacements = replacements
         return changed
+    }
+
+    private fun migrateRaidEconomyDefaults(): Boolean {
+        val oldDefaults = listOf(200, 400, 750, 1250, 2000, 3500, 6000)
+        if (data.economy.raidDensRewardsByTier != oldDefaults) return false
+        data.economy.raidDensRewardsByTier = listOf(200, 400, 750, 1250, 4500, 10000, 20000)
+        return true
     }
 
     fun save() {

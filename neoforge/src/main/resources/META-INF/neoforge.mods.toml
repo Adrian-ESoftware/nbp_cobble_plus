@@ -34,3 +34,10 @@ type = "required"
 versionRange = "*"
 ordering = "AFTER"
 side = "BOTH"
+
+[[dependencies.nbp_cobble_plus]]
+modId = "cobbledollars"
+type = "required"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"

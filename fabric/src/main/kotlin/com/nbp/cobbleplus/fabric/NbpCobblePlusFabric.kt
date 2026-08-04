@@ -98,6 +98,7 @@ class NbpCobblePlusFabric : ModInitializer {
             LegendarySpawnerFeature.tick(server)
             RitualBlocksFeature.tick(server)
             ItemMechanicsFeature.tick(server)
+            com.nbp.cobbleplus.feature.impl.EconomyFeature.tick(server)
         }
 
         ServerLifecycleEvents.SERVER_STARTING.register { server ->

@@ -37,6 +37,11 @@ object PlayerLanguage {
         ,"capture_cap.increased" to "§a[Capture Cap] Your limit increased from §e{old} §ato §e{cap}§a."
         ,"capture_cap.maximum" to "§7[Capture Cap] Your capture limit is already at the maximum: {cap}."
         ,"capture_cap.admin_set" to "§a[Capture Cap] {player}'s effective limit is now {cap}."
+        ,"economy.capture_reward" to "§a+{amount} CobbleDollars §7(capture)"
+        ,"economy.defeat_reward" to "§a+{amount} CobbleDollars §7(victory)"
+        ,"economy.cap_reached" to "§7[Economy] Your daily earning limit has been reached."
+        ,"economy.status" to "§6[Economy audit] §fCobbleDollars balance: §a{balance} §7| §fNBP credited today: §a{earned}§f / §e{cap}"
+        ,"economy.reset" to "§a[Economy] Daily economy data for {player} was reset."
     )
     private val pt = mapOf(
         "lang.current" to "§a[NBP] Seu idioma é §e{lang}§a. Disponíveis: §fen_us, pt_br",
@@ -61,6 +66,11 @@ object PlayerLanguage {
         ,"capture_cap.increased" to "§a[Limite de Captura] Seu limite aumentou de §e{old} §apara §e{cap}§a."
         ,"capture_cap.maximum" to "§7[Limite de Captura] Seu limite já está no máximo: {cap}."
         ,"capture_cap.admin_set" to "§a[Limite de Captura] O limite efetivo de {player} agora é {cap}."
+        ,"economy.capture_reward" to "§a+{amount} CobbleDollars §7(captura)"
+        ,"economy.defeat_reward" to "§a+{amount} CobbleDollars §7(vitória)"
+        ,"economy.cap_reached" to "§7[Economia] Seu limite diário de ganhos foi atingido."
+        ,"economy.status" to "§6[Auditoria econômica] §fSaldo CobbleDollars: §a{balance} §7| §fCreditado hoje pelo NBP: §a{earned}§f / §e{cap}"
+        ,"economy.reset" to "§a[Economia] Os dados econômicos diários de {player} foram resetados."
     )
     private val ptTemplates = mapOf(
         "welcome.normal" to "§a[NBP] Bem-vindo ao servidor NBP Cobble Plus, {player}!",
