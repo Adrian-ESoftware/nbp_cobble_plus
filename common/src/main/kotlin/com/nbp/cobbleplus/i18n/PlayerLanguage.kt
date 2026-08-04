@@ -42,6 +42,19 @@ object PlayerLanguage {
         ,"economy.cap_reached" to "§7[Economy] Your daily earning limit has been reached."
         ,"economy.status" to "§6[Economy audit] §fCobbleDollars balance: §a{balance} §7| §fNBP credited today: §a{earned}§f / §e{cap}"
         ,"economy.reset" to "§a[Economy] Daily economy data for {player} was reset."
+        ,"points.status_header" to "§b--- Your NBP Points ---"
+        ,"points.status_header_other" to "§b--- {player}'s NBP Points ---"
+        ,"points.capture_reward" to "§a[Points] §fYou earned points for capturing §e{pokemon}§f!"
+        ,"points.victory_reward" to "§a[Points] §fYou earned points for defeating a wild §e{pokemon}§f!"
+        ,"points.breeding_reward" to "§a[Points] §f+{amount} Breeding point for hatching an egg!"
+        ,"points.invalid_type" to "§c[Points] Invalid point type. Use §e/nbp points §fwith no arguments to see the valid ids."
+        ,"points.pay_self" to "§c[Points] You cannot pay points to yourself."
+        ,"points.pay_insufficient" to "§c[Points] You do not have enough points of that type."
+        ,"points.pay_success" to "§a[Points] You sent §e{amount} {type} §ato §e{player}§a."
+        ,"points.pay_received" to "§a[Points] You received §e{amount} {type} §afrom §e{player}§a."
+        ,"points.admin_give" to "§a[Points] Gave §e{amount} {type} §ato §e{player}§a. New total: §f{total}"
+        ,"points.admin_set" to "§a[Points] Set §e{player}§a's §e{type} §apoints to §f{total}§a."
+        ,"points.admin_remove" to "§a[Points] Removed §e{amount} {type} §afrom §e{player}§a. New total: §f{total}"
     )
     private val pt = mapOf(
         "lang.current" to "§a[NBP] Seu idioma é §e{lang}§a. Disponíveis: §fen_us, pt_br",
@@ -71,6 +84,19 @@ object PlayerLanguage {
         ,"economy.cap_reached" to "§7[Economia] Seu limite diário de ganhos foi atingido."
         ,"economy.status" to "§6[Auditoria econômica] §fSaldo CobbleDollars: §a{balance} §7| §fCreditado hoje pelo NBP: §a{earned}§f / §e{cap}"
         ,"economy.reset" to "§a[Economia] Os dados econômicos diários de {player} foram resetados."
+        ,"points.status_header" to "§b--- Seus Pontos NBP ---"
+        ,"points.status_header_other" to "§b--- Pontos NBP de {player} ---"
+        ,"points.capture_reward" to "§a[Pontos] §fVocê ganhou pontos por capturar §e{pokemon}§f!"
+        ,"points.victory_reward" to "§a[Pontos] §fVocê ganhou pontos por derrotar um §e{pokemon} §fselvagem!"
+        ,"points.breeding_reward" to "§a[Pontos] §f+{amount} ponto de Reprodução por chocar um ovo!"
+        ,"points.invalid_type" to "§c[Pontos] Tipo de ponto inválido. Use §e/nbp points §fsem argumentos para ver os ids válidos."
+        ,"points.pay_self" to "§c[Pontos] Você não pode enviar pontos para si mesmo."
+        ,"points.pay_insufficient" to "§c[Pontos] Você não possui pontos suficientes desse tipo."
+        ,"points.pay_success" to "§a[Pontos] Você enviou §e{amount} {type} §apara §e{player}§a."
+        ,"points.pay_received" to "§a[Pontos] Você recebeu §e{amount} {type} §ade §e{player}§a."
+        ,"points.admin_give" to "§a[Pontos] Deu §e{amount} {type} §apara §e{player}§a. Novo total: §f{total}"
+        ,"points.admin_set" to "§a[Pontos] Definiu os pontos de §e{type} §ade §e{player} §apara §f{total}§a."
+        ,"points.admin_remove" to "§a[Pontos] Removeu §e{amount} {type} §ade §e{player}§a. Novo total: §f{total}"
     )
     private val ptTemplates = mapOf(
         "welcome.normal" to "§a[NBP] Bem-vindo ao servidor NBP Cobble Plus, {player}!",

@@ -3,6 +3,8 @@ package com.nbp.cobbleplus.command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.mojang.brigadier.arguments.LongArgumentType
+import com.mojang.brigadier.context.CommandContext
 import com.nbp.cobbleplus.config.NbpConfig
 import com.nbp.cobbleplus.feature.FeatureManager
 import com.nbp.cobbleplus.feature.impl.AutoAnnouncerFeature
@@ -11,6 +13,8 @@ import com.nbp.cobbleplus.feature.impl.PartyHealFeature
 import com.nbp.cobbleplus.feature.impl.LegendarySpawnerFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.EconomyFeature
+import com.nbp.cobbleplus.feature.impl.PointsFeature
+import com.nbp.cobbleplus.feature.impl.PointType
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
@@ -43,6 +47,12 @@ object NbpCommands {
                                 "§e/nbp combo hud §7- Mostra/esconde o HUD do combo na tela\n" +
                                 "§e/nbp capturecap §7- Mostra seu limite de captura\n" +
                                 "§e/nbp economy §7- Mostra seus ganhos e limite diário\n" +
+                                "§e/nbp points §7- Mostra seus pontos\n" +
+                                "§e/nbp points pay <jogador> <tipo> <quantidade> §7- Envia pontos para outro jogador\n" +
+                                "§e/nbp points give <jogador> <tipo> <quantidade> §7- Dá pontos a um jogador (Admin)\n" +
+                                "§e/nbp points set <jogador> <tipo> <quantidade> §7- Define os pontos de um jogador (Admin)\n" +
+                                "§e/nbp points remove <jogador> <tipo> <quantidade> §7- Remove pontos de um jogador (Admin)\n" +
+                                "§e/nbp points get <jogador> §7- Lista os pontos de um jogador (Admin)\n" +
                                 "§e/nbp legendary test [espécie] §7- Testa um spawn lendário (Admin)\n" +
                                 "§e/nbp legendary test-natural §7- Executa o sorteio natural completo (Admin)\n" +
                                 "§e/nbp legendary chance §7- Mostra sua chance atual de anfitrião\n" +
@@ -278,6 +288,57 @@ object NbpCommands {
                     )
             )
             .then(
+                Commands.literal("points")
+                    .executes { context ->
+                        val player = context.source.player
+                        if (player == null) {
+                            context.source.sendFailure(PlayerLanguage.text(null, "player.only")); 0
+                        } else {
+                            showPoints(context.source, player); 1
+                        }
+                    }
+                    .then(
+                        Commands.literal("pay")
+                            .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("type", StringArgumentType.word()).suggests(POINT_TYPE_SUGGESTIONS)
+                                    .then(Commands.argument("amount", LongArgumentType.longArg(1))
+                                        .executes { context -> pointsPay(context) })))
+                    )
+                    .then(
+                        Commands.literal("give")
+                            .requires { it.hasPermission(2) }
+                            .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("type", StringArgumentType.word()).suggests(POINT_TYPE_SUGGESTIONS)
+                                    .then(Commands.argument("amount", LongArgumentType.longArg(1))
+                                        .executes { context -> pointsGive(context) })))
+                    )
+                    .then(
+                        Commands.literal("set")
+                            .requires { it.hasPermission(2) }
+                            .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("type", StringArgumentType.word()).suggests(POINT_TYPE_SUGGESTIONS)
+                                    .then(Commands.argument("amount", LongArgumentType.longArg(0))
+                                        .executes { context -> pointsSet(context) })))
+                    )
+                    .then(
+                        Commands.literal("remove")
+                            .requires { it.hasPermission(2) }
+                            .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("type", StringArgumentType.word()).suggests(POINT_TYPE_SUGGESTIONS)
+                                    .then(Commands.argument("amount", LongArgumentType.longArg(1))
+                                        .executes { context -> pointsRemove(context) })))
+                    )
+                    .then(
+                        Commands.literal("get")
+                            .requires { it.hasPermission(2) }
+                            .then(Commands.argument("player", EntityArgument.player())
+                                .executes { context ->
+                                    val target = EntityArgument.getPlayer(context, "player")
+                                    showPoints(context.source, target); 1
+                                })
+                    )
+            )
+            .then(
                 Commands.literal("announce")
                     .requires { source -> source.hasPermission(2) }
                     .executes { context ->
@@ -338,6 +399,89 @@ object NbpCommands {
             PlayerLanguage.text(source.player, "capture_cap.admin_set", "player" to target.scoreboardName, "cap" to cap)
         }, true)
         target.displayClientMessage(PlayerLanguage.text(target, "capture_cap.current", "cap" to cap), true)
+        return 1
+    }
+
+    private val POINT_TYPE_SUGGESTIONS = com.mojang.brigadier.suggestion.SuggestionProvider<CommandSourceStack> { _, builder ->
+        PointType.entries.forEach { builder.suggest(it.id) }
+        builder.buildFuture()
+    }
+
+    private fun resolvePointType(source: CommandSourceStack, raw: String): PointType? {
+        val type = PointType.fromId(raw)
+        if (type == null) source.sendFailure(PlayerLanguage.text(source.player, "points.invalid_type"))
+        return type
+    }
+
+    private fun showPoints(source: CommandSourceStack, target: ServerPlayer) {
+        val viewer = source.player
+        val header = if (viewer != null && viewer.uuid == target.uuid)
+            PlayerLanguage.string(viewer, "points.status_header")
+        else
+            PlayerLanguage.string(viewer, "points.status_header_other", "player" to target.scoreboardName)
+        val sb = StringBuilder(header).append('\n')
+        PointsFeature.getAll(target).forEach { (type, amount) ->
+            sb.append("§7").append(type.displayName(viewer)).append(": §a").append(amount).append('\n')
+        }
+        source.sendSuccess({ Component.literal(sb.toString().trim()) }, false)
+    }
+
+    private fun pointsPay(context: CommandContext<CommandSourceStack>): Int {
+        val player = context.source.player
+        if (player == null) {
+            context.source.sendFailure(PlayerLanguage.text(null, "player.only")); return 0
+        }
+        val target = EntityArgument.getPlayer(context, "player")
+        val type = resolvePointType(context.source, StringArgumentType.getString(context, "type")) ?: return 0
+        val amount = LongArgumentType.getLong(context, "amount")
+        if (target.uuid == player.uuid) {
+            context.source.sendFailure(PlayerLanguage.text(player, "points.pay_self")); return 0
+        }
+        if (!PointsFeature.pay(player, target, type, amount)) {
+            context.source.sendFailure(PlayerLanguage.text(player, "points.pay_insufficient")); return 0
+        }
+        context.source.sendSuccess({
+            PlayerLanguage.text(player, "points.pay_success", "amount" to amount, "type" to type.displayName(player), "player" to target.scoreboardName)
+        }, false)
+        target.displayClientMessage(
+            PlayerLanguage.text(target, "points.pay_received", "amount" to amount, "type" to type.displayName(target), "player" to player.scoreboardName), false
+        )
+        return 1
+    }
+
+    private fun pointsGive(context: CommandContext<CommandSourceStack>): Int {
+        val target = EntityArgument.getPlayer(context, "player")
+        val type = resolvePointType(context.source, StringArgumentType.getString(context, "type")) ?: return 0
+        val amount = LongArgumentType.getLong(context, "amount")
+        PointsFeature.add(target, type, amount)
+        context.source.sendSuccess({
+            PlayerLanguage.text(context.source.player, "points.admin_give",
+                "amount" to amount, "type" to type.displayName(context.source.player), "player" to target.scoreboardName, "total" to PointsFeature.get(target, type))
+        }, true)
+        return 1
+    }
+
+    private fun pointsSet(context: CommandContext<CommandSourceStack>): Int {
+        val target = EntityArgument.getPlayer(context, "player")
+        val type = resolvePointType(context.source, StringArgumentType.getString(context, "type")) ?: return 0
+        val amount = LongArgumentType.getLong(context, "amount")
+        PointsFeature.set(target, type, amount)
+        context.source.sendSuccess({
+            PlayerLanguage.text(context.source.player, "points.admin_set",
+                "type" to type.displayName(context.source.player), "player" to target.scoreboardName, "total" to PointsFeature.get(target, type))
+        }, true)
+        return 1
+    }
+
+    private fun pointsRemove(context: CommandContext<CommandSourceStack>): Int {
+        val target = EntityArgument.getPlayer(context, "player")
+        val type = resolvePointType(context.source, StringArgumentType.getString(context, "type")) ?: return 0
+        val amount = LongArgumentType.getLong(context, "amount")
+        PointsFeature.remove(target, type, amount)
+        context.source.sendSuccess({
+            PlayerLanguage.text(context.source.player, "points.admin_remove",
+                "amount" to amount, "type" to type.displayName(context.source.player), "player" to target.scoreboardName, "total" to PointsFeature.get(target, type))
+        }, true)
         return 1
     }
 }

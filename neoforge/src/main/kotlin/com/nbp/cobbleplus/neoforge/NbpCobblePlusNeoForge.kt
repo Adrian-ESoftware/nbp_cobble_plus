@@ -11,6 +11,7 @@ import com.nbp.cobbleplus.feature.impl.RitualBlocksFeature
 import com.nbp.cobbleplus.feature.impl.ItemMechanicsFeature
 import com.nbp.cobbleplus.feature.impl.PokemonLootModifierFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
+import com.nbp.cobbleplus.feature.impl.PointsFeature
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import com.nbp.cobbleplus.hud.CatchComboHudRenderer
 import com.nbp.cobbleplus.hud.CatchComboHudState
@@ -117,6 +118,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             LegendarySpawnerFeature.bindServer(event.server)
             PlayerLanguage.bind(event.server)
             CaptureCapFeature.bindServer(event.server)
+            PointsFeature.bindServer(event.server)
             PokemonLootModifierFeature.refreshDisplayTables()
         }
 
@@ -126,6 +128,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             LegendarySpawnerFeature.unbindServer()
             PlayerLanguage.unbind()
             CaptureCapFeature.unbindServer()
+            PointsFeature.unbindServer()
         }
 
         if (FMLEnvironment.dist == Dist.CLIENT) {

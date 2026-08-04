@@ -281,6 +281,23 @@ data class EconomyConfig(
     var raidDensRewardsByTier: List<Int> = listOf(200, 400, 750, 1250, 4500, 10000, 20000)
 )
 
+data class PointsConfig(
+    var enabled: Boolean = true,
+    var rewardCaptures: Boolean = true,
+    var rewardWildVictories: Boolean = true,
+    var rewardBreeding: Boolean = true,
+    var captureAmount: Long = 1,
+    var victoryAmount: Long = 1,
+    var breedingAmount: Long = 1,
+    var typePointsOnCaptureAmount: Long = 1,
+    var typePointsOnVictoryAmount: Long = 1,
+    var shinyAmount: Long = 5,
+    var legendaryAmount: Long = 10,
+    var mythicalAmount: Long = 10,
+    var ultraBeastAmount: Long = 10,
+    var showRewardActionBar: Boolean = true
+)
+
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
@@ -292,7 +309,8 @@ data class ModConfigData(
     var catchCombo: CatchComboConfig = CatchComboConfig(),
     var captureCap: CaptureCapConfig = CaptureCapConfig(),
     var pokemonApiary: PokemonApiaryConfig = PokemonApiaryConfig(),
-    var economy: EconomyConfig = EconomyConfig()
+    var economy: EconomyConfig = EconomyConfig(),
+    var points: PointsConfig = PointsConfig()
 )
 
 object NbpConfig {
@@ -311,7 +329,7 @@ object NbpConfig {
                 FileReader(configFile).use { reader ->
                     data = gson.fromJson(reader, ModConfigData::class.java) ?: ModConfigData()
                 }
-                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults()
+                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults() or ensurePointsConfig()
                 if (changed) save()
             } else {
                 save()
@@ -336,6 +354,16 @@ object NbpConfig {
         }
         if (changed) config.pokemonReplacements = replacements
         return changed
+    }
+
+    private fun ensurePointsConfig(): Boolean {
+        // Gson leaves newly-added nested config objects as null on configs saved
+        // before this field existed (it bypasses the Kotlin default-value constructor).
+        if (data.points == null) {
+            data.points = PointsConfig()
+            return true
+        }
+        return false
     }
 
     private fun migrateRaidEconomyDefaults(): Boolean {

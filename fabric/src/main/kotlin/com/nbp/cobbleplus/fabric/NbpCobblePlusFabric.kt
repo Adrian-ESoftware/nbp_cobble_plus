@@ -11,6 +11,7 @@ import com.nbp.cobbleplus.feature.impl.RitualBlocksFeature
 import com.nbp.cobbleplus.feature.impl.ItemMechanicsFeature
 import com.nbp.cobbleplus.feature.impl.PokemonLootModifierFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
+import com.nbp.cobbleplus.feature.impl.PointsFeature
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.world.InteractionResultHolder
@@ -107,6 +108,7 @@ class NbpCobblePlusFabric : ModInitializer {
             LegendarySpawnerFeature.bindServer(server)
             PlayerLanguage.bind(server)
             CaptureCapFeature.bindServer(server)
+            PointsFeature.bindServer(server)
             PokemonLootModifierFeature.refreshDisplayTables()
         }
 
@@ -116,6 +118,7 @@ class NbpCobblePlusFabric : ModInitializer {
             LegendarySpawnerFeature.unbindServer()
             PlayerLanguage.unbind()
             CaptureCapFeature.unbindServer()
+            PointsFeature.unbindServer()
         }
     }
 
