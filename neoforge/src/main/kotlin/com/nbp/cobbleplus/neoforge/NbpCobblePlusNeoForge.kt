@@ -15,7 +15,10 @@ import com.nbp.cobbleplus.feature.impl.PointsFeature
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import com.nbp.cobbleplus.hud.CatchComboHudRenderer
 import com.nbp.cobbleplus.hud.CatchComboHudState
+import com.nbp.cobbleplus.hud.PointsRewardHudRenderer
+import com.nbp.cobbleplus.hud.PointsRewardHudState
 import com.nbp.cobbleplus.network.CatchComboSyncPayload
+import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.server.level.ServerPlayer
 import net.neoforged.api.distmarker.Dist
@@ -57,10 +60,18 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             registrar.playToClient(CatchComboSyncPayload.TYPE, CatchComboSyncPayload.CODEC) { payload, _ ->
                 CatchComboHudState.lines = payload.lines
             }
+            registrar.playToClient(PointsRewardSyncPayload.TYPE, PointsRewardSyncPayload.CODEC) { payload, _ ->
+                PointsRewardHudState.text = payload.text
+                PointsRewardHudState.expiresAtMillis = System.currentTimeMillis() + payload.durationTicks * 50L
+            }
         }
 
         CatchComboFeature.networkSender = { player, lines ->
             PacketDistributor.sendToPlayer(player, CatchComboSyncPayload(lines))
+        }
+
+        PointsFeature.networkSender = { player, text, durationTicks ->
+            PacketDistributor.sendToPlayer(player, PointsRewardSyncPayload(text, durationTicks))
         }
 
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent ->
@@ -135,6 +146,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             NeoForge.EVENT_BUS.addListener { event: RenderGuiEvent.Post ->
                 val guiGraphics = event.guiGraphics
                 CatchComboHudRenderer.render(guiGraphics, guiGraphics.guiWidth(), guiGraphics.guiHeight())
+                PointsRewardHudRenderer.render(guiGraphics, guiGraphics.guiWidth(), guiGraphics.guiHeight())
             }
         }
     }

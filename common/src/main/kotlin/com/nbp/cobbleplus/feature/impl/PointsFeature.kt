@@ -2,6 +2,7 @@ package com.nbp.cobbleplus.feature.impl
 
 import com.cobblemon.mod.common.api.battles.model.actor.ActorType
 import com.cobblemon.mod.common.api.events.CobblemonEvents
+import com.cobblemon.mod.common.api.pokedex.PokedexEntryProgress
 import com.cobblemon.mod.common.api.reactive.ObservableSubscription
 import com.cobblemon.mod.common.battles.actor.PlayerBattleActor
 import com.cobblemon.mod.common.pokemon.Pokemon
@@ -16,32 +17,32 @@ import net.minecraft.util.datafix.DataFixTypes
 import net.minecraft.world.level.saveddata.SavedData
 import java.util.UUID
 
-enum class PointType(val id: String, private val labelEn: String, private val labelPt: String) {
-    CAPTURE("capture", "Capture", "Captura"),
-    VICTORY("victory", "Victory", "Vitória"),
-    BREEDING("breeding", "Breeding", "Reprodução"),
-    SHINY("shiny", "Shiny", "Shiny"),
-    LEGENDARY("legendary", "Legendary", "Lendário"),
-    MYTHICAL("mythical", "Mythical", "Mítico"),
-    ULTRA_BEAST("ultra_beast", "Ultra Beast", "Ultra Beast"),
-    TYPE_NORMAL("type_normal", "Normal", "Normal"),
-    TYPE_FIRE("type_fire", "Fire", "Fogo"),
-    TYPE_WATER("type_water", "Water", "Água"),
-    TYPE_ELECTRIC("type_electric", "Electric", "Elétrico"),
-    TYPE_GRASS("type_grass", "Grass", "Planta"),
-    TYPE_ICE("type_ice", "Ice", "Gelo"),
-    TYPE_FIGHTING("type_fighting", "Fighting", "Lutador"),
-    TYPE_POISON("type_poison", "Poison", "Venenoso"),
-    TYPE_GROUND("type_ground", "Ground", "Terrestre"),
-    TYPE_FLYING("type_flying", "Flying", "Voador"),
-    TYPE_PSYCHIC("type_psychic", "Psychic", "Psíquico"),
-    TYPE_BUG("type_bug", "Bug", "Inseto"),
-    TYPE_ROCK("type_rock", "Rock", "Pedra"),
-    TYPE_GHOST("type_ghost", "Ghost", "Fantasma"),
-    TYPE_DRAGON("type_dragon", "Dragon", "Dragão"),
-    TYPE_DARK("type_dark", "Dark", "Sombrio"),
-    TYPE_STEEL("type_steel", "Steel", "Aço"),
-    TYPE_FAIRY("type_fairy", "Fairy", "Fada");
+enum class PointType(val id: String, private val labelEn: String, private val labelPt: String, val color: String) {
+    CAPTURE("capture", "Capture", "Captura", "§a"),
+    VICTORY("victory", "Victory", "Vitória", "§6"),
+    BREEDING("breeding", "Breeding", "Reprodução", "§d"),
+    SHINY("shiny", "Shiny", "Shiny", "§e"),
+    LEGENDARY("legendary", "Legendary", "Lendário", "§5"),
+    MYTHICAL("mythical", "Mythical", "Mítico", "§c"),
+    ULTRA_BEAST("ultra_beast", "Ultra Beast", "Ultra Beast", "§b"),
+    TYPE_NORMAL("type_normal", "Normal", "Normal", "§7"),
+    TYPE_FIRE("type_fire", "Fire", "Fogo", "§6"),
+    TYPE_WATER("type_water", "Water", "Água", "§9"),
+    TYPE_ELECTRIC("type_electric", "Electric", "Elétrico", "§e"),
+    TYPE_GRASS("type_grass", "Grass", "Planta", "§2"),
+    TYPE_ICE("type_ice", "Ice", "Gelo", "§b"),
+    TYPE_FIGHTING("type_fighting", "Fighting", "Lutador", "§4"),
+    TYPE_POISON("type_poison", "Poison", "Venenoso", "§5"),
+    TYPE_GROUND("type_ground", "Ground", "Terrestre", "§6"),
+    TYPE_FLYING("type_flying", "Flying", "Voador", "§3"),
+    TYPE_PSYCHIC("type_psychic", "Psychic", "Psíquico", "§d"),
+    TYPE_BUG("type_bug", "Bug", "Inseto", "§a"),
+    TYPE_ROCK("type_rock", "Rock", "Pedra", "§8"),
+    TYPE_GHOST("type_ghost", "Ghost", "Fantasma", "§1"),
+    TYPE_DRAGON("type_dragon", "Dragon", "Dragão", "§9"),
+    TYPE_DARK("type_dark", "Dark", "Sombrio", "§8"),
+    TYPE_STEEL("type_steel", "Steel", "Aço", "§7"),
+    TYPE_FAIRY("type_fairy", "Fairy", "Fada", "§d");
 
     fun displayName(player: ServerPlayer?): String =
         if (player != null && PlayerLanguage.get(player) == "pt_br") labelPt else labelEn
@@ -57,6 +58,10 @@ object PointsFeature : FeatureModule {
     override val isEnabled get() = NbpConfig.data.points.enabled
     private val subscriptions = mutableListOf<ObservableSubscription<*>>()
     private var store: PointsSavedData? = null
+    private var serverRef: MinecraftServer? = null
+
+    /** Envia a linha de recompensa (texto pronto, com códigos de cor `§`) pro HUD do cliente. Ligado por cada plataforma. */
+    var networkSender: (ServerPlayer, String, Int) -> Unit = { _, _, _ -> }
 
     override fun onEnable() {
         if (subscriptions.isNotEmpty()) return
@@ -79,11 +84,19 @@ object PointsFeature : FeatureModule {
             val config = NbpConfig.data.points
             if (!isEnabled || !config.rewardBreeding) return@subscribe
             add(event.player, PointType.BREEDING, config.breedingAmount)
-            if (config.showRewardActionBar) {
-                event.player.displayClientMessage(
-                    PlayerLanguage.text(event.player, "points.breeding_reward", "amount" to config.breedingAmount), true
-                )
-            }
+            showReward(event.player, listOf(PointType.BREEDING to config.breedingAmount))
+        }
+        subscriptions += CobblemonEvents.POKEDEX_DATA_CHANGED_POST.subscribe { event ->
+            val config = NbpConfig.data.points
+            // The dex only ever transitions a given species+form to ENCOUNTERED once, so this
+            // naturally grants type points a single time per species and variation scanned.
+            if (!isEnabled || !config.rewardPokedexScans || event.knowledge != PokedexEntryProgress.ENCOUNTERED) return@subscribe
+            val player = serverRef?.playerList?.getPlayer(event.playerUUID) ?: return@subscribe
+            val types = event.dataSource.pokemon.types.mapNotNull { PointType.typeOf(it.name) }.distinct()
+            if (types.isEmpty()) return@subscribe
+            val gains = types.map { it to config.typePointsOnScanAmount }
+            gains.forEach { (type, amount) -> add(player, type, amount) }
+            showReward(player, gains)
         }
     }
 
@@ -92,8 +105,15 @@ object PointsFeature : FeatureModule {
         subscriptions.clear()
     }
 
-    fun bindServer(server: MinecraftServer) { store = PointsSavedData.get(server) }
-    fun unbindServer() { store = null }
+    fun bindServer(server: MinecraftServer) {
+        store = PointsSavedData.get(server)
+        serverRef = server
+    }
+
+    fun unbindServer() {
+        store = null
+        serverRef = null
+    }
 
     private fun isRaidBoss(battlePokemon: Any): Boolean = runCatching {
         battlePokemon.javaClass.methods.firstOrNull { it.name == "crd_isRaidBoss" && it.parameterCount == 0 }
@@ -111,12 +131,14 @@ object PointsFeature : FeatureModule {
         if (pokemon.isMythical()) gains += PointType.MYTHICAL to config.mythicalAmount
         if (pokemon.isUltraBeast()) gains += PointType.ULTRA_BEAST to config.ultraBeastAmount
         gains.forEach { (type, amount) -> add(player, type, amount) }
-        if (config.showRewardActionBar) {
-            val key = if (isCapture) "points.capture_reward" else "points.victory_reward"
-            player.displayClientMessage(
-                PlayerLanguage.text(player, key, "pokemon" to pokemon.species.resourceIdentifier.path), true
-            )
-        }
+        showReward(player, gains)
+    }
+
+    private fun showReward(player: ServerPlayer, gains: List<Pair<PointType, Long>>) {
+        if (gains.isEmpty() || !NbpConfig.data.points.showRewardBar) return
+        val text = gains.joinToString(" ") { (type, amount) -> "${type.color}+$amount ${type.displayName(player)}" }
+        val durationTicks = NbpConfig.data.points.rewardBarDurationTicks.let { if (it <= 0) 60 else it }
+        networkSender(player, text, durationTicks)
     }
 
     fun get(player: ServerPlayer, type: PointType): Long = requireStore().accounts[player.uuid]?.get(type.id) ?: 0L

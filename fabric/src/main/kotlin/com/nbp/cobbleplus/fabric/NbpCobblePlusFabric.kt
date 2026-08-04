@@ -17,6 +17,7 @@ import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.InteractionResult
 import com.nbp.cobbleplus.network.CatchComboSyncPayload
+import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -70,6 +71,11 @@ class NbpCobblePlusFabric : ModInitializer {
         PayloadTypeRegistry.playS2C().register(CatchComboSyncPayload.TYPE, CatchComboSyncPayload.CODEC)
         CatchComboFeature.networkSender = { player, lines ->
             ServerPlayNetworking.send(player, CatchComboSyncPayload(lines))
+        }
+
+        PayloadTypeRegistry.playS2C().register(PointsRewardSyncPayload.TYPE, PointsRewardSyncPayload.CODEC)
+        PointsFeature.networkSender = { player, text, durationTicks ->
+            ServerPlayNetworking.send(player, PointsRewardSyncPayload(text, durationTicks))
         }
 
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->

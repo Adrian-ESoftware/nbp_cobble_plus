@@ -286,16 +286,19 @@ data class PointsConfig(
     var rewardCaptures: Boolean = true,
     var rewardWildVictories: Boolean = true,
     var rewardBreeding: Boolean = true,
+    var rewardPokedexScans: Boolean = true,
     var captureAmount: Long = 1,
     var victoryAmount: Long = 1,
     var breedingAmount: Long = 1,
     var typePointsOnCaptureAmount: Long = 1,
     var typePointsOnVictoryAmount: Long = 1,
+    var typePointsOnScanAmount: Long = 1,
     var shinyAmount: Long = 5,
     var legendaryAmount: Long = 10,
     var mythicalAmount: Long = 10,
     var ultraBeastAmount: Long = 10,
-    var showRewardActionBar: Boolean = true
+    var showRewardBar: Boolean = true,
+    var rewardBarDurationTicks: Int = 60
 )
 
 data class ModConfigData(
