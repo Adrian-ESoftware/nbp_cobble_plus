@@ -15,6 +15,7 @@ import com.nbp.cobbleplus.feature.impl.PokemonLootModifierFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.PokemonApiaryFeature
 import com.nbp.cobbleplus.feature.impl.EconomyFeature
+import com.nbp.cobbleplus.feature.impl.PointsFeature
 import com.nbp.cobbleplus.feature.impl.SafariZoneFeature
 import com.nbp.cobbleplus.feature.impl.WagerBattleFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
@@ -48,6 +49,7 @@ object NbpCobblePlus {
         FeatureManager.register(PokemonLootModifierFeature)
         FeatureManager.register(PokemonApiaryFeature)
         FeatureManager.register(EconomyFeature)
+        FeatureManager.register(PointsFeature)
         FeatureManager.register(SafariZoneFeature)
         FeatureManager.register(WagerBattleFeature)
         FeatureManager.register(ServerEventsFeature)

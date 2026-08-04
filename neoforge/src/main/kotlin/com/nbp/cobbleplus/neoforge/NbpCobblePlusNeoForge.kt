@@ -12,10 +12,16 @@ import com.nbp.cobbleplus.feature.impl.ItemMechanicsFeature
 import com.nbp.cobbleplus.feature.impl.PokemonLootModifierFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
+import com.nbp.cobbleplus.feature.impl.PointsFeature
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import com.nbp.cobbleplus.hud.CatchComboHudRenderer
 import com.nbp.cobbleplus.hud.CatchComboHudState
+import com.nbp.cobbleplus.hud.PointsRewardHudRenderer
+import com.nbp.cobbleplus.hud.PointsRewardHudState
+import com.nbp.cobbleplus.hud.PointsScreen
 import com.nbp.cobbleplus.network.CatchComboSyncPayload
+import com.nbp.cobbleplus.network.PointsRewardSyncPayload
+import com.nbp.cobbleplus.network.PointsViewSyncPayload
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.server.level.ServerPlayer
 import net.neoforged.api.distmarker.Dist
@@ -41,6 +47,7 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
+import net.minecraft.client.Minecraft
 import net.minecraft.world.level.ItemLike
 import java.util.function.Supplier
 
@@ -57,10 +64,25 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             registrar.playToClient(CatchComboSyncPayload.TYPE, CatchComboSyncPayload.CODEC) { payload, _ ->
                 CatchComboHudState.lines = payload.lines
             }
+            registrar.playToClient(PointsRewardSyncPayload.TYPE, PointsRewardSyncPayload.CODEC) { payload, _ ->
+                PointsRewardHudState.text = payload.text
+                PointsRewardHudState.expiresAtMillis = System.currentTimeMillis() + payload.durationTicks * 50L
+            }
+            registrar.playToClient(PointsViewSyncPayload.TYPE, PointsViewSyncPayload.CODEC) { payload, _ ->
+                Minecraft.getInstance().execute {
+                    Minecraft.getInstance().setScreen(PointsScreen(payload.portuguese, payload.values))
+                }
+            }
         }
 
         CatchComboFeature.networkSender = { player, lines ->
             PacketDistributor.sendToPlayer(player, CatchComboSyncPayload(lines))
+        }
+        PointsFeature.networkSender = { player, text, durationTicks ->
+            PacketDistributor.sendToPlayer(player, PointsRewardSyncPayload(text, durationTicks))
+        }
+        PointsFeature.viewNetworkSender = { player, portuguese, values ->
+            PacketDistributor.sendToPlayer(player, PointsViewSyncPayload(portuguese, values))
         }
 
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent ->
@@ -123,6 +145,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             CaptureCapFeature.bindServer(event.server)
             PokemonLootModifierFeature.refreshDisplayTables()
             ServerEventsFeature.bindServer(event.server)
+            PointsFeature.bindServer(event.server)
         }
 
         NeoForge.EVENT_BUS.addListener { event: ServerStoppingEvent ->
@@ -132,12 +155,14 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             PlayerLanguage.unbind()
             CaptureCapFeature.unbindServer()
             ServerEventsFeature.unbindServer()
+            PointsFeature.unbindServer()
         }
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             NeoForge.EVENT_BUS.addListener { event: RenderGuiEvent.Post ->
                 val guiGraphics = event.guiGraphics
                 CatchComboHudRenderer.render(guiGraphics, guiGraphics.guiWidth(), guiGraphics.guiHeight())
+                PointsRewardHudRenderer.render(guiGraphics, guiGraphics.guiWidth(), guiGraphics.guiHeight())
             }
         }
     }

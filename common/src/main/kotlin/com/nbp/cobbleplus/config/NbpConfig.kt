@@ -347,6 +347,26 @@ data class WagerBattleConfig(
     var announceVictories: Boolean = true
 )
 
+data class PointsConfig(
+    var enabled: Boolean = true,
+    var rewardCaptures: Boolean = true,
+    var rewardWildVictories: Boolean = true,
+    var rewardBreeding: Boolean = true,
+    var rewardPokedexScans: Boolean = true,
+    var captureAmount: Long = 1,
+    var victoryAmount: Long = 1,
+    var breedingAmount: Long = 1,
+    var typePointsOnCaptureAmount: Long = 1,
+    var typePointsOnVictoryAmount: Long = 1,
+    var typePointsOnScanAmount: Long = 1,
+    var shinyAmount: Long = 5,
+    var legendaryAmount: Long = 10,
+    var mythicalAmount: Long = 10,
+    var ultraBeastAmount: Long = 10,
+    var showRewardBar: Boolean = true,
+    var rewardBarDurationTicks: Int = 60
+)
+
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
@@ -361,7 +381,8 @@ data class ModConfigData(
     var economy: EconomyConfig = EconomyConfig(),
     var safariZone: SafariZoneConfig = SafariZoneConfig(),
     var wagerBattle: WagerBattleConfig = WagerBattleConfig(),
-    var serverEvents: ServerEventsConfig = ServerEventsConfig()
+    var serverEvents: ServerEventsConfig = ServerEventsConfig(),
+    var points: PointsConfig = PointsConfig()
 )
 
 object NbpConfig {
@@ -380,7 +401,7 @@ object NbpConfig {
                 FileReader(configFile).use { reader ->
                     data = gson.fromJson(reader, ModConfigData::class.java) ?: ModConfigData()
                 }
-                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults()
+                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults() or ensurePointsConfig()
                 if (changed) save()
             } else {
                 save()
@@ -424,6 +445,14 @@ object NbpConfig {
         if (data.economy.raidDensRewardsByTier != oldDefaults) return false
         data.economy.raidDensRewardsByTier = listOf(200, 400, 750, 1250, 4500, 10000, 20000)
         return true
+    }
+
+    private fun ensurePointsConfig(): Boolean {
+        if (data.points == null) {
+            data.points = PointsConfig()
+            return true
+        }
+        return false
     }
 
     fun save() {

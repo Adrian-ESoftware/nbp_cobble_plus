@@ -12,6 +12,7 @@ import com.nbp.cobbleplus.feature.impl.PartyHealFeature
 import com.nbp.cobbleplus.feature.impl.LegendarySpawnerFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.EconomyFeature
+import com.nbp.cobbleplus.feature.impl.PointsFeature
 import com.nbp.cobbleplus.feature.impl.SafariZoneFeature
 import com.nbp.cobbleplus.feature.impl.WagerBattleFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
@@ -283,6 +284,25 @@ object NbpCommands {
                     )
             )
             .then(
+                Commands.literal("points")
+                    .executes { context ->
+                        val player = context.source.player
+                        if (player == null) {
+                            context.source.sendFailure(PlayerLanguage.text(null, "player.only")); 0
+                        } else {
+                            showPoints(context.source, player); 1
+                        }
+                    }
+                    .then(Commands.literal("view").executes { context ->
+                        val player = context.source.player
+                        if (player == null) {
+                            context.source.sendFailure(PlayerLanguage.text(null, "player.only")); 0
+                        } else {
+                            PointsFeature.openView(player); 1
+                        }
+                    })
+            )
+            .then(
                 Commands.literal("safari")
                     .executes { context ->
                         val player = context.source.player
@@ -479,6 +499,19 @@ object NbpCommands {
                 }
             }
         )
+    }
+
+    private fun showPoints(source: CommandSourceStack, target: ServerPlayer) {
+        val viewer = source.player
+        val header = if (viewer != null && viewer.uuid == target.uuid) {
+            PlayerLanguage.string(viewer, "points.status_header")
+        } else {
+            PlayerLanguage.string(viewer, "points.status_header_other", "player" to target.scoreboardName)
+        }
+        val body = PointsFeature.getAll(target).entries.joinToString("\n") { (type, amount) ->
+            "§7${type.displayName(viewer)}: §a$amount"
+        }
+        source.sendSuccess({ Component.literal("$header\n$body") }, false)
     }
 
     private fun testLegendary(source: CommandSourceStack, species: String?): Int {

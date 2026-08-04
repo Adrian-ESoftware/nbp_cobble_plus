@@ -12,11 +12,14 @@ import com.nbp.cobbleplus.feature.impl.ItemMechanicsFeature
 import com.nbp.cobbleplus.feature.impl.PokemonLootModifierFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
+import com.nbp.cobbleplus.feature.impl.PointsFeature
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.InteractionResult
 import com.nbp.cobbleplus.network.CatchComboSyncPayload
+import com.nbp.cobbleplus.network.PointsRewardSyncPayload
+import com.nbp.cobbleplus.network.PointsViewSyncPayload
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -71,6 +74,14 @@ class NbpCobblePlusFabric : ModInitializer {
         CatchComboFeature.networkSender = { player, lines ->
             ServerPlayNetworking.send(player, CatchComboSyncPayload(lines))
         }
+        PayloadTypeRegistry.playS2C().register(PointsRewardSyncPayload.TYPE, PointsRewardSyncPayload.CODEC)
+        PointsFeature.networkSender = { player, text, durationTicks ->
+            ServerPlayNetworking.send(player, PointsRewardSyncPayload(text, durationTicks))
+        }
+        PayloadTypeRegistry.playS2C().register(PointsViewSyncPayload.TYPE, PointsViewSyncPayload.CODEC)
+        PointsFeature.viewNetworkSender = { player, portuguese, values ->
+            ServerPlayNetworking.send(player, PointsViewSyncPayload(portuguese, values))
+        }
 
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             NbpCommands.register(dispatcher)
@@ -113,6 +124,7 @@ class NbpCobblePlusFabric : ModInitializer {
             CaptureCapFeature.bindServer(server)
             PokemonLootModifierFeature.refreshDisplayTables()
             ServerEventsFeature.bindServer(server)
+            PointsFeature.bindServer(server)
         }
 
         ServerLifecycleEvents.SERVER_STOPPING.register { _ ->
@@ -122,6 +134,7 @@ class NbpCobblePlusFabric : ModInitializer {
             PlayerLanguage.unbind()
             CaptureCapFeature.unbindServer()
             ServerEventsFeature.unbindServer()
+            PointsFeature.unbindServer()
         }
     }
 
