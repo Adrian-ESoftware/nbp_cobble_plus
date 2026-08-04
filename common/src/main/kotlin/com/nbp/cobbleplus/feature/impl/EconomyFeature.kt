@@ -74,6 +74,7 @@ object EconomyFeature : FeatureModule {
             val repeat = account.repeatMultiplier(action, species, now)
             requested += (baseReward(mon, action) * repeat).roundToLong().coerceAtLeast(1L)
         }
+        requested = (requested * ServerEventsFeature.getCobbleDollarsMultiplier()).roundToLong()
         val paid = account.applyDailyLimits(requested)
         if (paid <= 0L) {
             if (NbpConfig.data.economy.showRewardActionBar)

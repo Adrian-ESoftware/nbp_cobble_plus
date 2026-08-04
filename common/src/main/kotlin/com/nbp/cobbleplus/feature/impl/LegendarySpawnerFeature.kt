@@ -1,6 +1,11 @@
 package com.nbp.cobbleplus.feature.impl
 
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties
+import com.cobblemon.mod.common.api.spawning.detail.PokemonSpawnDetail
+import com.cobblemon.mod.common.api.spawning.detail.SpawnDetail
+import com.cobblemon.mod.common.api.spawning.influence.SpawningInfluence
+import com.cobblemon.mod.common.api.spawning.position.SpawnablePosition
+import com.cobblemon.mod.common.util.spawner
 import com.nbp.cobbleplus.NbpCobblePlus
 import com.nbp.cobbleplus.config.LegendarySpawnEntry
 import com.nbp.cobbleplus.config.NbpConfig
@@ -34,22 +39,30 @@ object LegendarySpawnerFeature : FeatureModule {
 
     private var ticks = 0L
     private var history: LegendarySpawnHistory? = null
+    private var server: MinecraftServer? = null
+    private val blockedInfluencePlayers = mutableSetOf<java.util.UUID>()
 
     override fun onEnable() = Unit
-    override fun onDisable() = Unit
+    override fun onDisable() {
+        removeNaturalSpawnBlockers()
+    }
 
     fun bindServer(server: MinecraftServer) {
+        this.server = server
         history = LegendarySpawnHistory.get(server)
         ticks = 0L
     }
 
     fun unbindServer() {
+        removeNaturalSpawnBlockers()
+        server = null
         history = null
         ticks = 0L
     }
 
     fun tick(server: MinecraftServer) {
         if (!isEnabled) return
+        server.playerList.players.forEach(::attachNaturalSpawnBlocker)
         ticks++
         val config = NbpConfig.data.legendarySpawner
         val interval = config.intervalMinutes.coerceAtLeast(1) * 60L * 20L
@@ -58,6 +71,45 @@ object LegendarySpawnerFeature : FeatureModule {
 
         trySpawn(server)
     }
+
+    private fun attachNaturalSpawnBlocker(player: ServerPlayer) {
+        val config = NbpConfig.data.legendarySpawner
+        if (!config.blockNaturalPokemonSpawns || blockedNaturalSpecies(config).isEmpty()) return
+        if (!blockedInfluencePlayers.add(player.uuid)) return
+        runCatching {
+            player.spawner.influences += NaturalSpawnBlocker
+        }.onFailure {
+            blockedInfluencePlayers.remove(player.uuid)
+            NbpCobblePlus.logger.warn("Não foi possível bloquear spawns naturais para ${player.scoreboardName}", it)
+        }
+    }
+
+    private fun removeNaturalSpawnBlockers() {
+        history?.let { /* keep saved history independent from runtime influences */ }
+        // Player references are only available while the server is bound; the normal
+        // server stop path calls this before clearing the feature's server reference.
+        server?.playerList?.players?.forEach { player ->
+            player.spawner.influences.removeAll { it === NaturalSpawnBlocker }
+        }
+        blockedInfluencePlayers.clear()
+    }
+
+    private object NaturalSpawnBlocker : SpawningInfluence {
+        override fun affectWeight(detail: SpawnDetail, spawnablePosition: SpawnablePosition, weight: Float): Float {
+            val config = NbpConfig.data.legendarySpawner
+            if (!config.blockNaturalPokemonSpawns) return weight
+            val species = (detail as? PokemonSpawnDetail)?.pokemon?.species ?: return weight
+            val id = species.substringAfterLast(":").lowercase()
+            return if (blockedNaturalSpecies(config).any { it.substringAfterLast(":").equals(id, true) }) 0f else weight
+        }
+    }
+
+    /** Handles old config files generated before the block list existed. */
+    @Suppress("UNCHECKED_CAST")
+    private fun blockedNaturalSpecies(config: com.nbp.cobbleplus.config.LegendarySpawnerConfig): List<String> =
+        runCatching { config.blockedNaturalSpecies as? List<String> }
+            .getOrNull()
+            ?: config.legendaryPool.map { it.species }
 
     fun forceSpawn(player: ServerPlayer, species: String? = null): Boolean =
         trySpawn(player.server, player, species?.lowercase()?.takeIf { it.isNotBlank() })

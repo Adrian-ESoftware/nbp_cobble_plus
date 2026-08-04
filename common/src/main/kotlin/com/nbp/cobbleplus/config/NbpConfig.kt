@@ -55,7 +55,9 @@ data class VanillaMobSpawnBlockerConfig(
     var enabled: Boolean = true,
     var allowedEntityTypes: List<String> = listOf(
         "minecraft:villager",
-        "minecraft:wandering_trader"
+        "minecraft:wandering_trader",
+        // Bees must remain alive for vanilla beehives to keep their occupants/state.
+        "minecraft:bee"
     ),
     var enablePokemonReplacements: Boolean = true,
     var replacementRadius: Double = 16.0,
@@ -66,6 +68,7 @@ data class VanillaMobSpawnBlockerConfig(
     var endRayquazaMaximumY: Double = 220.0,
     var pokemonReplacements: Map<String, List<String>> = mapOf(
         "minecraft:iron_golem" to listOf("species=golurk level=35", "species=golett level=25"),
+        "minecraft:bee" to listOf("species=combee level=5"),
         "minecraft:snow_golem" to listOf("species=vanillite level=15", "species=vanillish level=20", "species=cryogonal level=25", "species=snom level=12"),
         "minecraft:silverfish" to listOf("species=durant level=10", "species=sizzlipede level=10", "species=nincada level=10", "species=orthworm level=15"),
         "minecraft:endermite" to listOf("species=dottler level=15", "species=nincada level=12", "species=venipede level=12", "species=orthworm level=18", "species=blipbug level=10"),
@@ -147,6 +150,9 @@ private fun defaultLegendaryPool(): List<LegendarySpawnEntry> = listOf(
 
 data class LegendarySpawnerConfig(
     var enabled: Boolean = true,
+    /** Prevents these species from being selected by Cobblemon's natural spawner. */
+    var blockNaturalPokemonSpawns: Boolean = true,
+    var blockedNaturalSpecies: MutableList<String> = defaultLegendaryPool().map { it.species }.toMutableList(),
     var intervalMinutes: Int = 30,
     var spawnChance: Double = 0.25,
     var minimumDistanceFromPlayer: Int = 48,
@@ -313,6 +319,25 @@ data class SafariZoneConfig(
     )
 )
 
+data class ServerEventsConfig(
+    var enabled: Boolean = true,
+    var minIntervalMinutes: Int = 45,
+    var maxIntervalMinutes: Int = 180,
+    var eventDurationMinutes: Int = 30,
+    var hordeInvasionDurationMinutes: Int = 2,
+    var hordeShinyMultiplier: Double = 2.0,
+    var announceWithScreenTitle: Boolean = true,
+    var hiddenAbilityBaseChance: Double = 0.01,
+    var bountyRewardCommonMin: Long = 500L,
+    var bountyRewardCommonMax: Long = 1000L,
+    var bountyRewardUncommonMin: Long = 1500L,
+    var bountyRewardUncommonMax: Long = 2500L,
+    var bountyRewardRareMin: Long = 3000L,
+    var bountyRewardRareMax: Long = 4500L,
+    var bountyRewardUltraRareMin: Long = 5000L,
+    var bountyRewardUltraRareMax: Long = 7000L
+)
+
 data class WagerBattleConfig(
     var enabled: Boolean = true,
     var minWagerAmount: Long = 10L,
@@ -335,7 +360,8 @@ data class ModConfigData(
     var pokemonApiary: PokemonApiaryConfig = PokemonApiaryConfig(),
     var economy: EconomyConfig = EconomyConfig(),
     var safariZone: SafariZoneConfig = SafariZoneConfig(),
-    var wagerBattle: WagerBattleConfig = WagerBattleConfig()
+    var wagerBattle: WagerBattleConfig = WagerBattleConfig(),
+    var serverEvents: ServerEventsConfig = ServerEventsConfig()
 )
 
 object NbpConfig {
@@ -368,7 +394,12 @@ object NbpConfig {
     private fun addMissingBossReplacements(): Boolean {
         val config = data.vanillaMobSpawnBlocker
         val replacements = config.pokemonReplacements.toMutableMap()
+        val allowed = config.allowedEntityTypes.toMutableList()
         var changed = false
+        if (allowed.none { it.equals("minecraft:bee", ignoreCase = true) }) {
+            allowed += "minecraft:bee"
+            changed = true
+        }
         if ("minecraft:wither" !in replacements) {
             replacements["minecraft:wither"] = listOf("species=necrozma level=75")
             changed = true
@@ -377,7 +408,14 @@ object NbpConfig {
             replacements["minecraft:ender_dragon"] = listOf("species=rayquaza level=75")
             changed = true
         }
-        if (changed) config.pokemonReplacements = replacements
+        if ("minecraft:bee" !in replacements) {
+            replacements["minecraft:bee"] = listOf("species=combee level=5")
+            changed = true
+        }
+        if (changed) {
+            config.pokemonReplacements = replacements
+            config.allowedEntityTypes = allowed
+        }
         return changed
     }
 

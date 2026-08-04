@@ -55,7 +55,8 @@ data class SafariBiomeOption(
     val defaultPrice: Long = 2500L
 ) {
     fun getEffectivePrice(): Long {
-        return NbpConfig.data.safariZone.biomePrices[biomeKey] ?: defaultPrice
+        val base = NbpConfig.data.safariZone.biomePrices[biomeKey] ?: defaultPrice
+        return (base * ServerEventsFeature.getSafariDiscountMultiplier()).toLong().coerceAtLeast(0L)
     }
 }
 

@@ -14,6 +14,8 @@ import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.EconomyFeature
 import com.nbp.cobbleplus.feature.impl.SafariZoneFeature
 import com.nbp.cobbleplus.feature.impl.WagerBattleFeature
+import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
+import com.nbp.cobbleplus.feature.impl.ServerEventType
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
@@ -402,6 +404,80 @@ object NbpCommands {
                                 }
                         )
                 )
+        )
+
+        // /event
+        dispatcher.register(
+            Commands.literal("event")
+                // /event — show current event status
+                .executes { context ->
+                    val player = context.source.player
+                    if (player == null) { context.source.sendFailure(PlayerLanguage.text(null, "player.only")); return@executes 0 }
+                    player.sendSystemMessage(Component.literal(ServerEventsFeature.getStatusMessage(player)))
+                    1
+                }
+                // /event info
+                .then(Commands.literal("info")
+                    .executes { context ->
+                        val player = context.source.player
+                        if (player == null) { context.source.sendFailure(PlayerLanguage.text(null, "player.only")); return@executes 0 }
+                        player.sendSystemMessage(Component.literal(ServerEventsFeature.getStatusMessage(player)))
+                        1
+                    }
+                )
+                // /event claim — for bounty
+                .then(Commands.literal("claim")
+                    .executes { context ->
+                        val player = context.source.player
+                        if (player == null) { context.source.sendFailure(PlayerLanguage.text(null, "player.only")); return@executes 0 }
+                        ServerEventsFeature.handleBountyClaim(player)
+                        1
+                    }
+                )
+                .then(Commands.literal("stop")
+                    .requires { it.hasPermission(2) }
+                    .executes { context ->
+                        if (ServerEventsFeature.stopEvent(context.source.server)) {
+                            context.source.sendSuccess({ Component.literal("§a[Event] Active event stopped.") }, true)
+                            1
+                        } else {
+                            context.source.sendFailure(Component.literal("§c[Event] There is no active event."))
+                            0
+                        }
+                    }
+                )
+                // /event trigger <eventType> — admin only
+                .then(Commands.literal("trigger")
+                    .requires { it.hasPermission(2) }
+                    .then(
+                        Commands.argument("eventType", StringArgumentType.word())
+                            .executes { context ->
+                                val sv = context.source.server
+                                val typeName = StringArgumentType.getString(context, "eventType").uppercase()
+                                val eventType = runCatching { ServerEventType.valueOf(typeName) }.getOrNull()
+                                if (eventType == null) {
+                                    context.source.sendFailure(Component.literal("§cUnknown event type: $typeName. Valid: ${ServerEventType.values().joinToString { it.name.lowercase() }}"))
+                                    return@executes 0
+                                }
+                                ServerEventsFeature.triggerEvent(sv, eventType)
+                                context.source.sendSuccess({ Component.literal("§a[Event] Triggered event: ${eventType.key}") }, true)
+                                1
+                            }
+                    )
+                )
+        )
+
+        dispatcher.register(
+            Commands.literal("shiny").executes { context ->
+                val player = context.source.player
+                if (player == null) {
+                    context.source.sendFailure(PlayerLanguage.text(null, "player.only"))
+                    0
+                } else {
+                    ServerEventsFeature.getShinyStatusMessages(player).forEach(player::sendSystemMessage)
+                    1
+                }
+            }
         )
     }
 

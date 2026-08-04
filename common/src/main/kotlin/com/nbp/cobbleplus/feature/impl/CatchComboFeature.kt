@@ -434,6 +434,30 @@ object CatchComboFeature : FeatureModule {
         return tiers.lastOrNull { count >= it.minCombo } ?: tiers.first()
     }
 
+    fun currentShinyMultiplier(player: ServerPlayer): Double {
+        if (!isEnabled || !NbpConfig.data.catchCombo.enableShinyBonus) return 1.0
+        val state = loadState(player)
+        return if (state.count > 0 && state.species.isNotBlank()) tierFor(state.count).shinyChanceMultiplier else 1.0
+    }
+
+    fun currentShinyMultiplier(player: ServerPlayer, species: String): Double {
+        if (!isEnabled || !NbpConfig.data.catchCombo.enableShinyBonus) return 1.0
+        val state = loadState(player)
+        val normalized = species.substringAfterLast(":").lowercase()
+        return if (state.count > 0 && state.species.equals(normalized, ignoreCase = true)) {
+            tierFor(state.count).shinyChanceMultiplier
+        } else 1.0
+    }
+
+    data class ShinyBonus(val species: String, val count: Int, val multiplier: Double)
+
+    fun currentShinyBonus(player: ServerPlayer): ShinyBonus? {
+        if (!isEnabled || !NbpConfig.data.catchCombo.enableShinyBonus) return null
+        val state = loadState(player)
+        if (state.count <= 0 || state.species.isBlank()) return null
+        return ShinyBonus(speciesTitle(state.species), state.count, tierFor(state.count).shinyChanceMultiplier)
+    }
+
     private fun rareSpawnMultiplierFor(count: Int): Double {
         if (count <= 0) return 1.0
 

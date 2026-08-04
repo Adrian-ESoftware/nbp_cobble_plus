@@ -11,6 +11,7 @@ import com.nbp.cobbleplus.feature.impl.RitualBlocksFeature
 import com.nbp.cobbleplus.feature.impl.ItemMechanicsFeature
 import com.nbp.cobbleplus.feature.impl.PokemonLootModifierFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
+import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.world.InteractionResultHolder
@@ -101,6 +102,7 @@ class NbpCobblePlusFabric : ModInitializer {
             com.nbp.cobbleplus.feature.impl.EconomyFeature.tick(server)
             com.nbp.cobbleplus.feature.impl.SafariZoneFeature.tick(server)
             com.nbp.cobbleplus.feature.impl.WagerBattleFeature.tick(server)
+            ServerEventsFeature.tick(server)
         }
 
         ServerLifecycleEvents.SERVER_STARTING.register { server ->
@@ -110,6 +112,7 @@ class NbpCobblePlusFabric : ModInitializer {
             PlayerLanguage.bind(server)
             CaptureCapFeature.bindServer(server)
             PokemonLootModifierFeature.refreshDisplayTables()
+            ServerEventsFeature.bindServer(server)
         }
 
         ServerLifecycleEvents.SERVER_STOPPING.register { _ ->
@@ -118,6 +121,7 @@ class NbpCobblePlusFabric : ModInitializer {
             LegendarySpawnerFeature.unbindServer()
             PlayerLanguage.unbind()
             CaptureCapFeature.unbindServer()
+            ServerEventsFeature.unbindServer()
         }
     }
 

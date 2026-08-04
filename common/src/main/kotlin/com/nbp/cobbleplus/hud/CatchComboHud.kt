@@ -19,7 +19,7 @@ object CatchComboHudState {
  */
 object CatchComboHudRenderer {
     private const val MARGIN_RIGHT = 6
-    private const val MARGIN_BOTTOM = 8
+    private const val MARGIN_BOTTOM = 18
     private const val LINE_HEIGHT = 10
     private const val TEXT_COLOR = 0xFFFFFF
 

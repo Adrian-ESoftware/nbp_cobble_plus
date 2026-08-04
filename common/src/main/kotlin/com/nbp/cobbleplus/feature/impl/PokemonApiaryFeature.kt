@@ -49,7 +49,6 @@ object PokemonApiaryFeature : FeatureModule {
             val item = if (species == "vespiquen") Items.HONEY_BOTTLE else Items.HONEYCOMB
             val position = pokemon.entity?.position() ?: pasture.blockPos.center
             level.addFreshEntity(ItemEntity(level, position.x, position.y + 0.25, position.z, ItemStack(item)))
-            level.playSound(null, BlockPos.containing(position), SoundEvents.BEEHIVE_WORK, SoundSource.NEUTRAL, 0.6f, 1.1f)
             nextPastureDrop[pokemon.uuid] = level.gameTime + pastureDropDelay(level, species)
         }
     }
@@ -90,7 +89,6 @@ object PokemonApiaryFeature : FeatureModule {
 
         level.setBlock(pos, state.setValue(BeehiveBlock.HONEY_LEVEL, state.getValue(BeehiveBlock.HONEY_LEVEL) + 1), 3)
         hive.setChanged()
-        level.playSound(null, pos, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 0.7f, if (producer == "vespiquen") 0.8f else 1.05f)
         nextProduction[key] = level.gameTime + productionDelay(level, producer)
     }
 

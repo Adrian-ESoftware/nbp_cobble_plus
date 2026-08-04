@@ -65,6 +65,13 @@ object VanillaMobSpawnBlockerFeature : FeatureModule {
         val entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)
         if (entityId.namespace != "minecraft") return false
 
+        // Vanilla bees are converted to Combee as soon as they leave a hive.
+        // This keeps vanilla bee entities out of the world while preserving the
+        // hive's normal occupant bookkeeping.
+        if (entityId.toString().equals("minecraft:bee", ignoreCase = true) &&
+            NbpConfig.data.vanillaMobSpawnBlocker.enablePokemonReplacements &&
+            replacementCandidates("minecraft:bee").isNotEmpty()) return true
+
         return NbpConfig.data.vanillaMobSpawnBlocker.allowedEntityTypes.none {
             it.equals(entityId.toString(), ignoreCase = true)
         }
@@ -73,7 +80,8 @@ object VanillaMobSpawnBlockerFeature : FeatureModule {
     fun hasConfiguredReplacement(entity: Entity): Boolean {
         val id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString()
         val isBossReplacement = id == "minecraft:wither" || id == "minecraft:ender_dragon"
-        if (!shouldBlock(entity) || (!entity.tags.contains(REPLACEMENT_SOURCE_TAG) && !isBossReplacement) ||
+        val isBeeReplacement = id.equals("minecraft:bee", ignoreCase = true)
+        if (!shouldBlock(entity) || (!entity.tags.contains(REPLACEMENT_SOURCE_TAG) && !isBossReplacement && !isBeeReplacement) ||
             !NbpConfig.data.vanillaMobSpawnBlocker.enablePokemonReplacements) {
             return false
         }

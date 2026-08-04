@@ -11,6 +11,7 @@ import com.nbp.cobbleplus.feature.impl.RitualBlocksFeature
 import com.nbp.cobbleplus.feature.impl.ItemMechanicsFeature
 import com.nbp.cobbleplus.feature.impl.PokemonLootModifierFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
+import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import com.nbp.cobbleplus.hud.CatchComboHudRenderer
 import com.nbp.cobbleplus.hud.CatchComboHudState
@@ -95,6 +96,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             com.nbp.cobbleplus.feature.impl.EconomyFeature.tick(event.server)
             com.nbp.cobbleplus.feature.impl.SafariZoneFeature.tick(event.server)
             com.nbp.cobbleplus.feature.impl.WagerBattleFeature.tick(event.server)
+            ServerEventsFeature.tick(event.server)
         }
 
         NeoForge.EVENT_BUS.addListener { event: PlayerInteractEvent.EntityInteract ->
@@ -120,6 +122,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             PlayerLanguage.bind(event.server)
             CaptureCapFeature.bindServer(event.server)
             PokemonLootModifierFeature.refreshDisplayTables()
+            ServerEventsFeature.bindServer(event.server)
         }
 
         NeoForge.EVENT_BUS.addListener { event: ServerStoppingEvent ->
@@ -128,6 +131,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             LegendarySpawnerFeature.unbindServer()
             PlayerLanguage.unbind()
             CaptureCapFeature.unbindServer()
+            ServerEventsFeature.unbindServer()
         }
 
         if (FMLEnvironment.dist == Dist.CLIENT) {

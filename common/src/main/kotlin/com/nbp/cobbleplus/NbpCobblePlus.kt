@@ -17,6 +17,7 @@ import com.nbp.cobbleplus.feature.impl.PokemonApiaryFeature
 import com.nbp.cobbleplus.feature.impl.EconomyFeature
 import com.nbp.cobbleplus.feature.impl.SafariZoneFeature
 import com.nbp.cobbleplus.feature.impl.WagerBattleFeature
+import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.config.PokemonLootConfig
 import org.slf4j.LoggerFactory
 
@@ -49,6 +50,7 @@ object NbpCobblePlus {
         FeatureManager.register(EconomyFeature)
         FeatureManager.register(SafariZoneFeature)
         FeatureManager.register(WagerBattleFeature)
+        FeatureManager.register(ServerEventsFeature)
 
         // Inicializa módulos
         FeatureManager.initAll()

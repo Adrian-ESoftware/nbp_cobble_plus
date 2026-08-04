@@ -315,21 +315,85 @@ object WagerBattleFeature : FeatureModule {
     private fun startPvPBattle(player1: ServerPlayer, player2: ServerPlayer) {
         runCatching {
             val registry = Cobblemon.battleRegistry
-            val method = registry.javaClass.methods.firstOrNull { m ->
-                m.parameterCount >= 2 && m.parameterTypes[0] == ServerPlayer::class.java && m.parameterTypes[1] == ServerPlayer::class.java
-            } ?: registry.javaClass.methods.firstOrNull { m ->
-                m.name.contains("start") && m.parameterCount >= 2
+            logger.info("Cobblemon BattleRegistry Class: ${registry.javaClass.name}")
+            
+            val methods = registry.javaClass.methods
+            for (m in methods) {
+                if (m.name.contains("start", ignoreCase = true)) {
+                    logger.info("Encontrado método em BattleRegistry: ${m.name}(${m.parameterTypes.joinToString { it.simpleName }})")
+                }
             }
 
-            if (method != null) {
-                if (method.parameterCount == 2) {
-                    method.invoke(registry, player1, player2)
-                } else {
-                    val params = arrayOfNulls<Any>(method.parameterCount)
-                    params[0] = player1
-                    params[1] = player2
-                    method.invoke(registry, *params)
+            // 1. Tenta método direto que receba ServerPlayer
+            val directMethod = registry.javaClass.methods.firstOrNull { m ->
+                m.parameterCount >= 2 && m.parameterTypes[0].isAssignableFrom(ServerPlayer::class.java) && m.parameterTypes[1].isAssignableFrom(ServerPlayer::class.java)
+            }
+            if (directMethod != null) {
+                logger.info("Iniciando batalha via directMethod: ${directMethod.name}")
+                directMethod.invoke(registry, player1, player2)
+                return
+            }
+
+            // 2. Tenta método por PlayerBattleActor ou BattleSide
+            val p1Party = Cobblemon.storage.getParty(player1)
+            val p2Party = Cobblemon.storage.getParty(player2)
+
+            val p1PokemonList = runCatching {
+                val occupiedMethod = p1Party.javaClass.methods.firstOrNull { 
+                    it.name == "toGettablePokemon" || it.name == "toPokemonList" || it.name == "getOccupied" || it.name == "occupied" || it.name == "toCollection" || it.name == "all" 
                 }
+                occupiedMethod?.invoke(p1Party) as? List<*> ?: emptyList<Any>()
+            }.getOrDefault(emptyList())
+
+            val p2PokemonList = runCatching {
+                val occupiedMethod = p2Party.javaClass.methods.firstOrNull { 
+                    it.name == "toGettablePokemon" || it.name == "toPokemonList" || it.name == "getOccupied" || it.name == "occupied" || it.name == "toCollection" || it.name == "all" 
+                }
+                occupiedMethod?.invoke(p2Party) as? List<*> ?: emptyList<Any>()
+            }.getOrDefault(emptyList())
+
+            val actorConstructors = PlayerBattleActor::class.java.constructors
+            var actor1: Any? = null
+            var actor2: Any? = null
+
+            for (ctor in actorConstructors) {
+                runCatching {
+                    if (ctor.parameterCount == 2) {
+                        val types = ctor.parameterTypes
+                        if (types[0] == UUID::class.java) {
+                            actor1 = ctor.newInstance(player1.uuid, p1PokemonList)
+                            actor2 = ctor.newInstance(player2.uuid, p2PokemonList)
+                        } else if (types[0].isAssignableFrom(ServerPlayer::class.java)) {
+                            actor1 = ctor.newInstance(player1, p1PokemonList)
+                            actor2 = ctor.newInstance(player2, p2PokemonList)
+                        }
+                    } else if (ctor.parameterCount == 1 && ctor.parameterTypes[0].isAssignableFrom(ServerPlayer::class.java)) {
+                        actor1 = ctor.newInstance(player1)
+                        actor2 = ctor.newInstance(player2)
+                    }
+                }
+                if (actor1 != null && actor2 != null) break
+            }
+
+            if (actor1 != null && actor2 != null) {
+                val startMethod = registry.javaClass.methods.firstOrNull { m ->
+                    m.name.contains("start") && m.parameterCount in 2..3
+                }
+                if (startMethod != null) {
+                    logger.info("Iniciando batalha via startMethod (${startMethod.name}) com actors!")
+                    if (startMethod.parameterCount == 2) {
+                        startMethod.invoke(registry, actor1, actor2)
+                    } else if (startMethod.parameterCount == 3) {
+                        val formatType = startMethod.parameterTypes[0]
+                        val formatVal = formatType.enumConstants?.firstOrNull() 
+                            ?: formatType.fields.firstOrNull { it.name.contains("SINGLES") }?.get(null)
+                        startMethod.invoke(registry, formatVal, actor1, actor2)
+                    }
+                } else {
+                    logger.warn("Nenhum método startBattle encontrado em BattleRegistry!")
+                }
+            } else {
+                logger.warn("Não foi possível instanciar PlayerBattleActor para a batalha!")
             }
         }.onFailure { ex ->
             logger.error("Falha ao iniciar batalha automática entre ${player1.scoreboardName} e ${player2.scoreboardName}", ex)
