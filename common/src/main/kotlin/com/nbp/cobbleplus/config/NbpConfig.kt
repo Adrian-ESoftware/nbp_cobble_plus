@@ -301,6 +301,21 @@ data class PointsConfig(
     var rewardBarDurationTicks: Int = 60
 )
 
+data class RotomAiConfig(
+    var enabled: Boolean = true,
+    var apiKey: String = "",
+    var baseUrl: String = "https://openrouter.ai/api/v1",
+    var model: String = "",
+    var systemPrompt: String = "You are Rotom, the Pokédex assistant living inside this Cobblemon server. " +
+        "Answer trainers' questions about Pokémon using the tools available to you instead of guessing " +
+        "whenever the question needs real game data (stats, types, weaknesses, spawns, drops, evolutions). " +
+        "Keep answers short and to the point, in a friendly, slightly electric/robotic Rotom tone. " +
+        "Always answer in the same language the player's message is written in.",
+    var maxHistoryMessages: Int = 10,
+    var requestTimeoutSeconds: Int = 30,
+    var maxOutputTokens: Int = 512
+)
+
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
@@ -313,7 +328,8 @@ data class ModConfigData(
     var captureCap: CaptureCapConfig = CaptureCapConfig(),
     var pokemonApiary: PokemonApiaryConfig = PokemonApiaryConfig(),
     var economy: EconomyConfig = EconomyConfig(),
-    var points: PointsConfig = PointsConfig()
+    var points: PointsConfig = PointsConfig(),
+    var rotomAi: RotomAiConfig = RotomAiConfig()
 )
 
 object NbpConfig {
@@ -332,7 +348,7 @@ object NbpConfig {
                 FileReader(configFile).use { reader ->
                     data = gson.fromJson(reader, ModConfigData::class.java) ?: ModConfigData()
                 }
-                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults() or ensurePointsConfig()
+                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults() or ensurePointsConfig() or ensureRotomAiConfig()
                 if (changed) save()
             } else {
                 save()
@@ -364,6 +380,14 @@ object NbpConfig {
         // before this field existed (it bypasses the Kotlin default-value constructor).
         if (data.points == null) {
             data.points = PointsConfig()
+            return true
+        }
+        return false
+    }
+
+    private fun ensureRotomAiConfig(): Boolean {
+        if (data.rotomAi == null) {
+            data.rotomAi = RotomAiConfig()
             return true
         }
         return false

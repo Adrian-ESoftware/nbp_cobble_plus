@@ -15,6 +15,7 @@ import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.EconomyFeature
 import com.nbp.cobbleplus.feature.impl.PointsFeature
 import com.nbp.cobbleplus.feature.impl.PointType
+import com.nbp.cobbleplus.feature.impl.RotomAiFeature
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
@@ -54,6 +55,7 @@ object NbpCommands {
                                 "§e/nbp points set <jogador> <tipo> <quantidade> §7- Define os pontos de um jogador (Admin)\n" +
                                 "§e/nbp points remove <jogador> <tipo> <quantidade> §7- Remove pontos de um jogador (Admin)\n" +
                                 "§e/nbp points get <jogador> §7- Lista os pontos de um jogador (Admin)\n" +
+                                "§e/nbp rotomai send <mensagem> §7- Conversa com o RotomAI\n" +
                                 "§e/nbp legendary test [espécie] §7- Testa um spawn lendário (Admin)\n" +
                                 "§e/nbp legendary test-natural §7- Executa o sorteio natural completo (Admin)\n" +
                                 "§e/nbp legendary chance §7- Mostra sua chance atual de anfitrião\n" +
@@ -348,6 +350,26 @@ object NbpCommands {
                                     val target = EntityArgument.getPlayer(context, "player")
                                     showPoints(context.source, target); 1
                                 })
+                    )
+            )
+            .then(
+                Commands.literal("rotomai")
+                    .then(
+                        Commands.literal("send")
+                            .then(
+                                Commands.argument("message", StringArgumentType.greedyString())
+                                    .executes { context ->
+                                        val player = context.source.player
+                                        if (player == null) {
+                                            context.source.sendFailure(PlayerLanguage.text(null, "player.only")); 0
+                                        } else {
+                                            val message = StringArgumentType.getString(context, "message")
+                                            context.source.sendSuccess({ PlayerLanguage.text(player, "rotomai.thinking") }, false)
+                                            RotomAiFeature.ask(player, message)
+                                            1
+                                        }
+                                    }
+                            )
                     )
             )
             .then(

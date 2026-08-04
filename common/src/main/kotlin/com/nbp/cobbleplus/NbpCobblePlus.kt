@@ -16,6 +16,7 @@ import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.PokemonApiaryFeature
 import com.nbp.cobbleplus.feature.impl.EconomyFeature
 import com.nbp.cobbleplus.feature.impl.PointsFeature
+import com.nbp.cobbleplus.feature.impl.RotomAiFeature
 import com.nbp.cobbleplus.config.PokemonLootConfig
 import org.slf4j.LoggerFactory
 
@@ -47,6 +48,7 @@ object NbpCobblePlus {
         FeatureManager.register(PokemonApiaryFeature)
         FeatureManager.register(EconomyFeature)
         FeatureManager.register(PointsFeature)
+        FeatureManager.register(RotomAiFeature)
 
         // Inicializa módulos
         FeatureManager.initAll()

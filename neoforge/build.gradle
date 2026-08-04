@@ -35,6 +35,17 @@ dependencies {
     }
 
     shadowBundle project(path: ":common", configuration: "transformProductionNeoForge")
+
+    // RotomAI: LangChain4j não é um mod NeoForge, então precisa ser incluído (shadow) direto no jar,
+    // igual à saída do :common acima. slf4j é excluído porque o próprio NeoForge já traz um módulo
+    // org.slf4j; empacotar outra cópia quebra o resolvedor de módulos do JPMS (erro visto: "Modules
+    // org.slf4j and nbp_cobble_plus export package org.slf4j.event to module ponder").
+    shadowBundle("dev.langchain4j:langchain4j:${rootProject.langchain4j_version}") {
+        exclude group: "org.slf4j"
+    }
+    shadowBundle("dev.langchain4j:langchain4j-open-ai:${rootProject.langchain4j_version}") {
+        exclude group: "org.slf4j"
+    }
 }
 
 processResources {
@@ -50,6 +61,8 @@ processResources {
 shadowJar {
     configurations = [project.configurations.shadowBundle]
     archiveClassifier = "dev-shadow"
+    // Evita colisão com outras cópias de Jackson que outros mods possam empacotar.
+    relocate "com.fasterxml.jackson", "com.nbp.cobbleplus.shadow.jackson"
 }
 
 remapJar {
