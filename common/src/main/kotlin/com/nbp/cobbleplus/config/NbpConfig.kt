@@ -313,6 +313,15 @@ data class SafariZoneConfig(
     )
 )
 
+data class WagerBattleConfig(
+    var enabled: Boolean = true,
+    var minWagerAmount: Long = 10L,
+    var maxWagerAmount: Long = 100000L,
+    var maxChallengeDistance: Int = 30,
+    var challengeTimeoutSeconds: Int = 60,
+    var announceVictories: Boolean = true
+)
+
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
@@ -325,7 +334,8 @@ data class ModConfigData(
     var captureCap: CaptureCapConfig = CaptureCapConfig(),
     var pokemonApiary: PokemonApiaryConfig = PokemonApiaryConfig(),
     var economy: EconomyConfig = EconomyConfig(),
-    var safariZone: SafariZoneConfig = SafariZoneConfig()
+    var safariZone: SafariZoneConfig = SafariZoneConfig(),
+    var wagerBattle: WagerBattleConfig = WagerBattleConfig()
 )
 
 object NbpConfig {

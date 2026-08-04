@@ -3,6 +3,7 @@ package com.nbp.cobbleplus.command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.mojang.brigadier.arguments.LongArgumentType
 import com.nbp.cobbleplus.config.NbpConfig
 import com.nbp.cobbleplus.feature.FeatureManager
 import com.nbp.cobbleplus.feature.impl.AutoAnnouncerFeature
@@ -12,6 +13,7 @@ import com.nbp.cobbleplus.feature.impl.LegendarySpawnerFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.EconomyFeature
 import com.nbp.cobbleplus.feature.impl.SafariZoneFeature
+import com.nbp.cobbleplus.feature.impl.WagerBattleFeature
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
@@ -361,18 +363,45 @@ object NbpCommands {
                 )
         )
 
-        // Registrar também o atalho /pokeheal se o módulo PartyHeal estiver ativado
+        // Registrar atalho /duel para apostas em PvP
         dispatcher.register(
-            Commands.literal("pokeheal")
+            Commands.literal("duel")
                 .executes { context ->
                     val player = context.source.player
-                    if (player != null) {
-                        PartyHealFeature.executeHeal(player)
-                    } else {
-                        context.source.sendFailure(Component.literal("Apenas jogadores podem usar este comando."))
-                    }
+                    if (player != null) player.sendSystemMessage(PlayerLanguage.text(player, "wager.usage"))
                     1
                 }
+                .then(
+                    Commands.literal("accept")
+                        .executes { context ->
+                            val player = context.source.player
+                            if (player != null) WagerBattleFeature.acceptChallenge(player)
+                            1
+                        }
+                )
+                .then(
+                    Commands.literal("deny")
+                        .executes { context ->
+                            val player = context.source.player
+                            if (player != null) WagerBattleFeature.denyChallenge(player)
+                            1
+                        }
+                )
+                .then(
+                    Commands.argument("target", StringArgumentType.word())
+                        .then(
+                            Commands.argument("amount", LongArgumentType.longArg(1))
+                                .executes { context ->
+                                    val player = context.source.player
+                                    if (player != null) {
+                                        val targetName = StringArgumentType.getString(context, "target")
+                                        val amount = LongArgumentType.getLong(context, "amount")
+                                        WagerBattleFeature.challengePlayer(player, targetName, amount)
+                                    }
+                                    1
+                                }
+                        )
+                )
         )
     }
 
