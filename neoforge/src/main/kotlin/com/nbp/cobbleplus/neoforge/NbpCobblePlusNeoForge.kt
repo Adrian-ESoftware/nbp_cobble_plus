@@ -17,9 +17,12 @@ import com.nbp.cobbleplus.hud.CatchComboHudRenderer
 import com.nbp.cobbleplus.hud.CatchComboHudState
 import com.nbp.cobbleplus.hud.PointsRewardHudRenderer
 import com.nbp.cobbleplus.hud.PointsRewardHudState
+import com.nbp.cobbleplus.hud.PointsScreen
 import com.nbp.cobbleplus.network.CatchComboSyncPayload
 import com.nbp.cobbleplus.network.PointsRewardSyncPayload
+import com.nbp.cobbleplus.network.PointsViewSyncPayload
 import com.nbp.cobbleplus.i18n.PlayerLanguage
+import net.minecraft.client.Minecraft
 import net.minecraft.server.level.ServerPlayer
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
@@ -64,6 +67,11 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
                 PointsRewardHudState.text = payload.text
                 PointsRewardHudState.expiresAtMillis = System.currentTimeMillis() + payload.durationTicks * 50L
             }
+            registrar.playToClient(PointsViewSyncPayload.TYPE, PointsViewSyncPayload.CODEC) { payload, _ ->
+                Minecraft.getInstance().execute {
+                    Minecraft.getInstance().setScreen(PointsScreen(payload.portuguese, payload.values))
+                }
+            }
         }
 
         CatchComboFeature.networkSender = { player, lines ->
@@ -72,6 +80,10 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
 
         PointsFeature.networkSender = { player, text, durationTicks ->
             PacketDistributor.sendToPlayer(player, PointsRewardSyncPayload(text, durationTicks))
+        }
+
+        PointsFeature.viewNetworkSender = { player, portuguese, values ->
+            PacketDistributor.sendToPlayer(player, PointsViewSyncPayload(portuguese, values))
         }
 
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent ->

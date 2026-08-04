@@ -44,8 +44,10 @@ enum class PointType(val id: String, private val labelEn: String, private val la
     TYPE_STEEL("type_steel", "Steel", "Aço", "§7"),
     TYPE_FAIRY("type_fairy", "Fairy", "Fada", "§d");
 
+    fun displayName(portuguese: Boolean): String = if (portuguese) labelPt else labelEn
+
     fun displayName(player: ServerPlayer?): String =
-        if (player != null && PlayerLanguage.get(player) == "pt_br") labelPt else labelEn
+        displayName(player != null && PlayerLanguage.get(player) == "pt_br")
 
     companion object {
         fun fromId(id: String): PointType? = entries.firstOrNull { it.id.equals(id, ignoreCase = true) }
@@ -62,6 +64,9 @@ object PointsFeature : FeatureModule {
 
     /** Envia a linha de recompensa (texto pronto, com códigos de cor `§`) pro HUD do cliente. Ligado por cada plataforma. */
     var networkSender: (ServerPlayer, String, Int) -> Unit = { _, _, _ -> }
+
+    /** Envia o extrato completo (idioma resolvido + valores em ordem de [PointType.entries]) pra abrir a tela de pontos. */
+    var viewNetworkSender: (ServerPlayer, Boolean, LongArray) -> Unit = { _, _, _ -> }
 
     override fun onEnable() {
         if (subscriptions.isNotEmpty()) return
@@ -146,6 +151,13 @@ object PointsFeature : FeatureModule {
     fun getAll(player: ServerPlayer): Map<PointType, Long> {
         val account = requireStore().accounts[player.uuid] ?: emptyMap()
         return PointType.entries.associateWith { account[it.id] ?: 0L }
+    }
+
+    /** Pede pro cliente desse jogador abrir a tela com o extrato completo de pontos. */
+    fun openView(player: ServerPlayer) {
+        val portuguese = PlayerLanguage.get(player) == "pt_br"
+        val values = getAll(player).values.toLongArray()
+        viewNetworkSender(player, portuguese, values)
     }
 
     fun add(player: ServerPlayer, type: PointType, amount: Long) {

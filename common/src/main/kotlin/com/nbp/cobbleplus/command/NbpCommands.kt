@@ -48,6 +48,7 @@ object NbpCommands {
                                 "§e/nbp capturecap §7- Mostra seu limite de captura\n" +
                                 "§e/nbp economy §7- Mostra seus ganhos e limite diário\n" +
                                 "§e/nbp points §7- Mostra seus pontos\n" +
+                                "§e/nbp points view §7- Abre a tela com o extrato completo de pontos\n" +
                                 "§e/nbp points pay <jogador> <tipo> <quantidade> §7- Envia pontos para outro jogador\n" +
                                 "§e/nbp points give <jogador> <tipo> <quantidade> §7- Dá pontos a um jogador (Admin)\n" +
                                 "§e/nbp points set <jogador> <tipo> <quantidade> §7- Define os pontos de um jogador (Admin)\n" +
@@ -297,6 +298,17 @@ object NbpCommands {
                             showPoints(context.source, player); 1
                         }
                     }
+                    .then(
+                        Commands.literal("view")
+                            .executes { context ->
+                                val player = context.source.player
+                                if (player == null) {
+                                    context.source.sendFailure(PlayerLanguage.text(null, "player.only")); 0
+                                } else {
+                                    PointsFeature.openView(player); 1
+                                }
+                            }
+                    )
                     .then(
                         Commands.literal("pay")
                             .then(Commands.argument("player", EntityArgument.player())
