@@ -17,6 +17,9 @@ import com.nbp.cobbleplus.feature.impl.SafariZoneFeature
 import com.nbp.cobbleplus.feature.impl.WagerBattleFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventType
+import com.nbp.cobbleplus.feature.impl.MissionsFeature
+import com.nbp.cobbleplus.config.MissionsConfigFile
+import com.nbp.cobbleplus.mission.MissionCycle
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
@@ -49,6 +52,8 @@ object NbpCommands {
                                 "§e/nbp combo hud §7- Mostra/esconde o HUD do combo na tela\n" +
                                 "§e/nbp capturecap §7- Mostra seu limite de captura\n" +
                                 "§e/nbp economy §7- Mostra seus ganhos e limite diário\n" +
+                                "§e/nbp mission §7- Abre a tela de missões diárias e semanais\n" +
+                                "§e/nbp mission list §7- Lista suas missões no chat\n" +
                                 "§e/nbp legendary test [espécie] §7- Testa um spawn lendário (Admin)\n" +
                                 "§e/nbp legendary test-natural §7- Executa o sorteio natural completo (Admin)\n" +
                                 "§e/nbp legendary chance §7- Mostra sua chance atual de anfitrião\n" +
@@ -331,6 +336,91 @@ object NbpCommands {
                                 if (player != null) {
                                     player.sendSystemMessage(PlayerLanguage.text(player, "safari.setspawn_info"))
                                 }
+                                1
+                            }
+                    )
+            )
+            .then(
+                Commands.literal("mission")
+                    .executes { context ->
+                        val player = context.source.player
+                        if (player != null) MissionsFeature.openView(player) else context.source.sendFailure(Component.literal("Apenas jogadores."))
+                        1
+                    }
+                    .then(
+                        Commands.literal("open").executes { context ->
+                            val player = context.source.player
+                            if (player != null) MissionsFeature.openView(player) else context.source.sendFailure(Component.literal("Apenas jogadores."))
+                            1
+                        }
+                    )
+                    .then(
+                        Commands.literal("list").executes { context ->
+                            val player = context.source.player
+                            if (player == null) { context.source.sendFailure(PlayerLanguage.text(null, "player.only")); return@executes 0 }
+                            MissionsFeature.listFor(player).forEach { player.sendSystemMessage(Component.literal(it)) }
+                            1
+                        }
+                    )
+                    .then(
+                        Commands.literal("reset")
+                            .requires { it.hasPermission(2) }
+                            .then(
+                                Commands.literal("daily").executes { context ->
+                                    val player = context.source.player
+                                    if (player == null) { context.source.sendFailure(PlayerLanguage.text(null, "player.only")); return@executes 0 }
+                                    MissionsFeature.resetDaily(player, context.source.server)
+                                    1
+                                }
+                            )
+                            .then(
+                                Commands.literal("weekly").executes { context ->
+                                    MissionsFeature.resetWeekly(context.source.server)
+                                    1
+                                }
+                            )
+                    )
+                    .then(
+                        Commands.literal("complete")
+                            .requires { it.hasPermission(2) }
+                            .then(
+                                Commands.argument("player", EntityArgument.player())
+                                    .then(
+                                        Commands.argument("cycle", StringArgumentType.word())
+                                            .executes { context ->
+                                                val target = EntityArgument.getPlayer(context, "player")
+                                                val cycle = runCatching { MissionCycle.valueOf(StringArgumentType.getString(context, "cycle").uppercase()) }.getOrNull()
+                                                if (cycle == null) {
+                                                    context.source.sendFailure(Component.literal("§cCiclo inválido: daily | weekly"))
+                                                    return@executes 0
+                                                }
+                                                val completed = MissionsFeature.forceCompleteCycle(target, cycle)
+                                                context.source.sendSuccess({ Component.literal("§aCompletadas $completed missão(ões) (${cycle.name.lowercase()}).") }, true)
+                                                1
+                                            }
+                                    )
+                            )
+                    )
+                    .then(
+                        Commands.literal("reward")
+                            .requires { it.hasPermission(2) }
+                            .then(
+                                Commands.argument("player", EntityArgument.player())
+                                    .executes { context ->
+                                        val target = EntityArgument.getPlayer(context, "player")
+                                        val bucketId = MissionsConfigFile.data.buckets.keys.firstOrNull()
+                                        val rolls = if (bucketId != null) MissionsFeature.testReward(target, bucketId) else emptyList()
+                                        context.source.sendSuccess({ Component.literal("§a$rolls recompensa(s) gerada(s) para §e${target.scoreboardName}§a (bucket: $bucketId).") }, true)
+                                        1
+                                    }
+                            )
+                    )
+                    .then(
+                        Commands.literal("reload")
+                            .requires { it.hasPermission(2) }
+                            .executes { context ->
+                                MissionsConfigFile.load()
+                                context.source.sendSuccess({ Component.literal("§amissions.json recarregado.") }, true)
                                 1
                             }
                     )

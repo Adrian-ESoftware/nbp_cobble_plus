@@ -5,9 +5,11 @@ import com.nbp.cobbleplus.hud.CatchComboHudState
 import com.nbp.cobbleplus.hud.PointsRewardHudRenderer
 import com.nbp.cobbleplus.hud.PointsRewardHudState
 import com.nbp.cobbleplus.hud.PointsScreen
+import com.nbp.cobbleplus.hud.MissionsScreen
 import com.nbp.cobbleplus.network.CatchComboSyncPayload
 import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.network.PointsViewSyncPayload
+import com.nbp.cobbleplus.network.MissionsViewSyncPayload
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
@@ -27,6 +29,12 @@ class NbpCobblePlusFabricClient : ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(PointsViewSyncPayload.TYPE) { payload, _ ->
             Minecraft.getInstance().execute {
                 Minecraft.getInstance().setScreen(PointsScreen(payload.portuguese, payload.values))
+            }
+        }
+
+        ClientPlayNetworking.registerGlobalReceiver(MissionsViewSyncPayload.TYPE) { payload, _ ->
+            Minecraft.getInstance().execute {
+                Minecraft.getInstance().setScreen(MissionsScreen(payload.portuguese, payload.daily, payload.weekly))
             }
         }
 

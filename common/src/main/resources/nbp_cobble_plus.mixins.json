@@ -12,6 +12,7 @@
     ,"BeehiveBlockEntityMixin"
     ,"PokemonPastureBlockEntityMixin"
     ,"EndDragonFightAccessor"
+    ,"PokemonSpawnActionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

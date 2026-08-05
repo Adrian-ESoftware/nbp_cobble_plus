@@ -13,21 +13,25 @@ import com.nbp.cobbleplus.feature.impl.PokemonLootModifierFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.feature.impl.PointsFeature
+import com.nbp.cobbleplus.feature.impl.MissionsFeature
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import com.nbp.cobbleplus.hud.CatchComboHudRenderer
 import com.nbp.cobbleplus.hud.CatchComboHudState
 import com.nbp.cobbleplus.hud.PointsRewardHudRenderer
 import com.nbp.cobbleplus.hud.PointsRewardHudState
 import com.nbp.cobbleplus.hud.PointsScreen
+import com.nbp.cobbleplus.hud.MissionsScreen
 import com.nbp.cobbleplus.network.CatchComboSyncPayload
 import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.network.PointsViewSyncPayload
+import com.nbp.cobbleplus.network.MissionsViewSyncPayload
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.server.level.ServerPlayer
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.loading.FMLEnvironment
 import net.neoforged.fml.common.Mod
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent
 import net.neoforged.neoforge.client.event.RenderGuiEvent
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.RegisterCommandsEvent
@@ -57,7 +61,15 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
         BLOCKS.register(modEventBus)
         ITEMS.register(modEventBus)
         CREATIVE_TABS.register(modEventBus)
-        NbpCobblePlus.init()
+
+        // A inicialização dos módulos precisa ocorrer depois que todos os mods
+        // terminaram seus construtores. Fazer isso aqui (no construtor @Mod)
+        // pode executar listeners do Cobblemon durante a janela em que o
+        // ModLoadingContext ainda está ativo e mudar a ordem de inicialização
+        // de mods client-side como Quark/Zeta.
+        modEventBus.addListener { _: FMLCommonSetupEvent ->
+            NbpCobblePlus.init()
+        }
 
         modEventBus.addListener { event: RegisterPayloadHandlersEvent ->
             val registrar = event.registrar("1")
@@ -73,6 +85,11 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
                     Minecraft.getInstance().setScreen(PointsScreen(payload.portuguese, payload.values))
                 }
             }
+            registrar.playToClient(MissionsViewSyncPayload.TYPE, MissionsViewSyncPayload.CODEC) { payload, _ ->
+                Minecraft.getInstance().execute {
+                    Minecraft.getInstance().setScreen(MissionsScreen(payload.portuguese, payload.daily, payload.weekly))
+                }
+            }
         }
 
         CatchComboFeature.networkSender = { player, lines ->
@@ -83,6 +100,9 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
         }
         PointsFeature.viewNetworkSender = { player, portuguese, values ->
             PacketDistributor.sendToPlayer(player, PointsViewSyncPayload(portuguese, values))
+        }
+        MissionsFeature.viewNetworkSender = { player, portuguese, daily, weekly ->
+            PacketDistributor.sendToPlayer(player, MissionsViewSyncPayload(portuguese, daily, weekly))
         }
 
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent ->
@@ -119,6 +139,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             com.nbp.cobbleplus.feature.impl.SafariZoneFeature.tick(event.server)
             com.nbp.cobbleplus.feature.impl.WagerBattleFeature.tick(event.server)
             ServerEventsFeature.tick(event.server)
+            MissionsFeature.tick(event.server)
         }
 
         NeoForge.EVENT_BUS.addListener { event: PlayerInteractEvent.EntityInteract ->
@@ -146,6 +167,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             PokemonLootModifierFeature.refreshDisplayTables()
             ServerEventsFeature.bindServer(event.server)
             PointsFeature.bindServer(event.server)
+            MissionsFeature.bindServer(event.server)
         }
 
         NeoForge.EVENT_BUS.addListener { event: ServerStoppingEvent ->
@@ -156,6 +178,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             CaptureCapFeature.unbindServer()
             ServerEventsFeature.unbindServer()
             PointsFeature.unbindServer()
+            MissionsFeature.unbindServer()
         }
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
