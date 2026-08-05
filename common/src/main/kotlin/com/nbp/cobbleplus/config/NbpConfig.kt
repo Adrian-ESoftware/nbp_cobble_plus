@@ -385,7 +385,6 @@ data class SynchronizedNaturesConfig(
     var marbles: Int = 2,
     var chance: Int = 1
 )
-
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
