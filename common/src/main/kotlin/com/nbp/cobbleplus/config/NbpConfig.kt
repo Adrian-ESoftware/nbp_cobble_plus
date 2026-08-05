@@ -385,6 +385,12 @@ data class SynchronizedNaturesConfig(
     var marbles: Int = 2,
     var chance: Int = 1
 )
+
+data class GtsConfig(
+    var enabled: Boolean = true,
+    var maxListingsPerPlayer: Int = 10,
+    var pageSize: Int = 45
+)
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
@@ -402,7 +408,8 @@ data class ModConfigData(
     var serverEvents: ServerEventsConfig = ServerEventsConfig(),
     var points: PointsConfig = PointsConfig(),
     var missions: MissionsConfig = MissionsConfig(),
-    var synchronizedNatures: SynchronizedNaturesConfig = SynchronizedNaturesConfig()
+    var synchronizedNatures: SynchronizedNaturesConfig = SynchronizedNaturesConfig(),
+    var gts: GtsConfig = GtsConfig()
 )
 
 object NbpConfig {

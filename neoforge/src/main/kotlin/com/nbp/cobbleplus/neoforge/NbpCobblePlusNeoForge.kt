@@ -14,6 +14,7 @@ import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.feature.impl.PointsFeature
 import com.nbp.cobbleplus.feature.impl.MissionsFeature
+import com.nbp.cobbleplus.feature.impl.GtsFeature
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import com.nbp.cobbleplus.hud.CatchComboHudRenderer
 import com.nbp.cobbleplus.hud.CatchComboHudState
@@ -113,6 +114,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             val player = event.entity
             if (player is ServerPlayer) {
                 WelcomeFeature.handlePlayerJoin(player)
+                GtsFeature.claimPayments(player)
                 CatchComboFeature.attachSpawningInfluence(player)
                 CatchComboFeature.syncHud(player)
             }
@@ -166,8 +168,9 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             CaptureCapFeature.bindServer(event.server)
             PokemonLootModifierFeature.refreshDisplayTables()
             ServerEventsFeature.bindServer(event.server)
-            PointsFeature.bindServer(event.server)
-            MissionsFeature.bindServer(event.server)
+                PointsFeature.bindServer(event.server)
+                MissionsFeature.bindServer(event.server)
+                GtsFeature.bindServer(event.server)
         }
 
         NeoForge.EVENT_BUS.addListener { event: ServerStoppingEvent ->
@@ -179,6 +182,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             ServerEventsFeature.unbindServer()
             PointsFeature.unbindServer()
             MissionsFeature.unbindServer()
+            GtsFeature.unbindServer()
         }
 
         if (FMLEnvironment.dist == Dist.CLIENT) {

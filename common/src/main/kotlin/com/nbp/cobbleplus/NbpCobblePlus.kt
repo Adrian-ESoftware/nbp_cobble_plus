@@ -23,6 +23,7 @@ import com.nbp.cobbleplus.config.PokemonLootConfig
 import com.nbp.cobbleplus.config.MissionsConfigFile
 import com.nbp.cobbleplus.feature.impl.MissionsFeature
 import com.nbp.cobbleplus.feature.impl.SynchronizedNaturesFeature
+import com.nbp.cobbleplus.feature.impl.GtsFeature
 import org.slf4j.LoggerFactory
 
 object NbpCobblePlus {
@@ -59,6 +60,7 @@ object NbpCobblePlus {
         FeatureManager.register(ServerEventsFeature)
         FeatureManager.register(MissionsFeature)
         FeatureManager.register(SynchronizedNaturesFeature)
+        FeatureManager.register(GtsFeature)
 
         // Inicializa módulos
         FeatureManager.initAll()

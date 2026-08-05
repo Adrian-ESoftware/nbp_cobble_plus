@@ -18,6 +18,7 @@ import com.nbp.cobbleplus.feature.impl.WagerBattleFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventType
 import com.nbp.cobbleplus.feature.impl.MissionsFeature
+import com.nbp.cobbleplus.feature.impl.GtsFeature
 import com.nbp.cobbleplus.config.MissionsConfigFile
 import com.nbp.cobbleplus.mission.MissionCycle
 import com.nbp.cobbleplus.i18n.PlayerLanguage
@@ -54,6 +55,9 @@ object NbpCommands {
                                 "§e/nbp economy §7- Mostra seus ganhos e limite diário\n" +
                                 "§e/nbp mission §7- Abre a tela de missões diárias e semanais\n" +
                                 "§e/nbp mission list §7- Lista suas missões no chat\n" +
+                                "§e/nbp gts §7- Abre o Global Trade Station\n" +
+                                "§e/nbp gts sell <slot> <preço> §7- Anuncia um Pokémon\n" +
+                                "§e/nbp gts cancel <id> §7- Cancela um anúncio seu\n" +
                                 "§e/nbp legendary test [espécie] §7- Testa um spawn lendário (Admin)\n" +
                                 "§e/nbp legendary test-natural §7- Executa o sorteio natural completo (Admin)\n" +
                                 "§e/nbp legendary chance §7- Mostra sua chance atual de anfitrião\n" +
@@ -173,6 +177,41 @@ object NbpCommands {
                         source.sendSuccess({ Component.literal(sb.toString().trim()) }, false)
                         1
                     }
+            )
+            .then(
+                Commands.literal("gts")
+                    .executes { context ->
+                        val player = context.source.player
+                        if (player == null) context.source.sendFailure(Component.literal("Apenas jogadores podem abrir o GTS."))
+                        else GtsFeature.open(player)
+                        1
+                    }
+                    .then(
+                        Commands.literal("sell")
+                            .then(Commands.argument("slot", IntegerArgumentType.integer(1, 6))
+                                .then(Commands.argument("price", LongArgumentType.longArg(1))
+                                    .executes { context ->
+                                        val player = context.source.player
+                                        if (player == null) { context.source.sendFailure(Component.literal("Apenas jogadores podem vender Pokémon.")); 0 }
+                                        else if (GtsFeature.sell(player, IntegerArgumentType.getInteger(context, "slot"), LongArgumentType.getLong(context, "price"))) 1 else 0
+                                    }))
+                    )
+                    .then(
+                        Commands.literal("buy")
+                            .then(Commands.argument("id", LongArgumentType.longArg(1)).executes { context ->
+                                val player = context.source.player
+                                if (player == null) { context.source.sendFailure(Component.literal("Apenas jogadores podem comprar Pokémon.")); 0 }
+                                else if (GtsFeature.purchase(player, LongArgumentType.getLong(context, "id"))) 1 else 0
+                            })
+                    )
+                    .then(
+                        Commands.literal("cancel")
+                            .then(Commands.argument("id", LongArgumentType.longArg(1)).executes { context ->
+                                val player = context.source.player
+                                if (player == null) { context.source.sendFailure(Component.literal("Apenas jogadores podem cancelar anúncios.")); 0 }
+                                else if (GtsFeature.cancel(player, LongArgumentType.getLong(context, "id"))) 1 else 0
+                            })
+                    )
             )
             .then(
                 Commands.literal("heal")

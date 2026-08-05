@@ -14,6 +14,7 @@ import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.feature.impl.PointsFeature
 import com.nbp.cobbleplus.feature.impl.MissionsFeature
+import com.nbp.cobbleplus.feature.impl.GtsFeature
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.world.InteractionResultHolder
@@ -95,6 +96,7 @@ class NbpCobblePlusFabric : ModInitializer {
 
         ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
             WelcomeFeature.handlePlayerJoin(handler.player)
+            GtsFeature.claimPayments(handler.player)
             CatchComboFeature.attachSpawningInfluence(handler.player)
             CatchComboFeature.syncHud(handler.player)
         }
@@ -133,6 +135,7 @@ class NbpCobblePlusFabric : ModInitializer {
             ServerEventsFeature.bindServer(server)
             PointsFeature.bindServer(server)
             MissionsFeature.bindServer(server)
+            GtsFeature.bindServer(server)
         }
 
         ServerLifecycleEvents.SERVER_STOPPING.register { _ ->
@@ -144,6 +147,7 @@ class NbpCobblePlusFabric : ModInitializer {
             ServerEventsFeature.unbindServer()
             PointsFeature.unbindServer()
             MissionsFeature.unbindServer()
+            GtsFeature.unbindServer()
         }
     }
 
