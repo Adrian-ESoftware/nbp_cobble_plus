@@ -367,6 +367,17 @@ data class PointsConfig(
     var rewardBarDurationTicks: Int = 60
 )
 
+data class MissionsConfig(
+    var enabled: Boolean = true,
+    var dailyCount: Int = 3,
+    var weeklyCount: Int = 5,
+    /** Hora UTC em que o ciclo diário é fechado (ex.: 0 = meia-noite UTC). */
+    var dayResetHourUtc: Int = 0,
+    /** Dia da semana UTC (1 = segunda) em que o ciclo semanal é fechado. */
+    var weekResetWeekday: Int = 1,
+    var broadcastWeeklyCompletion: Boolean = true
+)
+
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
@@ -382,7 +393,8 @@ data class ModConfigData(
     var safariZone: SafariZoneConfig = SafariZoneConfig(),
     var wagerBattle: WagerBattleConfig = WagerBattleConfig(),
     var serverEvents: ServerEventsConfig = ServerEventsConfig(),
-    var points: PointsConfig = PointsConfig()
+    var points: PointsConfig = PointsConfig(),
+    var missions: MissionsConfig = MissionsConfig()
 )
 
 object NbpConfig {
@@ -401,7 +413,7 @@ object NbpConfig {
                 FileReader(configFile).use { reader ->
                     data = gson.fromJson(reader, ModConfigData::class.java) ?: ModConfigData()
                 }
-                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults() or ensurePointsConfig()
+                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults() or ensurePointsConfig() or ensureMissionsConfig()
                 if (changed) save()
             } else {
                 save()
@@ -450,6 +462,14 @@ object NbpConfig {
     private fun ensurePointsConfig(): Boolean {
         if (data.points == null) {
             data.points = PointsConfig()
+            return true
+        }
+        return false
+    }
+
+    private fun ensureMissionsConfig(): Boolean {
+        if (data.missions == null) {
+            data.missions = MissionsConfig()
             return true
         }
         return false

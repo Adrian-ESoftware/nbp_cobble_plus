@@ -13,6 +13,7 @@ import com.nbp.cobbleplus.feature.impl.PokemonLootModifierFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.feature.impl.PointsFeature
+import com.nbp.cobbleplus.feature.impl.MissionsFeature
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.world.InteractionResultHolder
@@ -20,6 +21,7 @@ import net.minecraft.world.InteractionResult
 import com.nbp.cobbleplus.network.CatchComboSyncPayload
 import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.network.PointsViewSyncPayload
+import com.nbp.cobbleplus.network.MissionsViewSyncPayload
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -82,6 +84,10 @@ class NbpCobblePlusFabric : ModInitializer {
         PointsFeature.viewNetworkSender = { player, portuguese, values ->
             ServerPlayNetworking.send(player, PointsViewSyncPayload(portuguese, values))
         }
+        PayloadTypeRegistry.playS2C().register(MissionsViewSyncPayload.TYPE, MissionsViewSyncPayload.CODEC)
+        MissionsFeature.viewNetworkSender = { player, portuguese, daily, weekly ->
+            ServerPlayNetworking.send(player, MissionsViewSyncPayload(portuguese, daily, weekly))
+        }
 
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             NbpCommands.register(dispatcher)
@@ -114,6 +120,7 @@ class NbpCobblePlusFabric : ModInitializer {
             com.nbp.cobbleplus.feature.impl.SafariZoneFeature.tick(server)
             com.nbp.cobbleplus.feature.impl.WagerBattleFeature.tick(server)
             ServerEventsFeature.tick(server)
+            MissionsFeature.tick(server)
         }
 
         ServerLifecycleEvents.SERVER_STARTING.register { server ->
@@ -125,6 +132,7 @@ class NbpCobblePlusFabric : ModInitializer {
             PokemonLootModifierFeature.refreshDisplayTables()
             ServerEventsFeature.bindServer(server)
             PointsFeature.bindServer(server)
+            MissionsFeature.bindServer(server)
         }
 
         ServerLifecycleEvents.SERVER_STOPPING.register { _ ->
@@ -135,6 +143,7 @@ class NbpCobblePlusFabric : ModInitializer {
             CaptureCapFeature.unbindServer()
             ServerEventsFeature.unbindServer()
             PointsFeature.unbindServer()
+            MissionsFeature.unbindServer()
         }
     }
 

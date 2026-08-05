@@ -20,6 +20,8 @@ import com.nbp.cobbleplus.feature.impl.SafariZoneFeature
 import com.nbp.cobbleplus.feature.impl.WagerBattleFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.config.PokemonLootConfig
+import com.nbp.cobbleplus.config.MissionsConfigFile
+import com.nbp.cobbleplus.feature.impl.MissionsFeature
 import org.slf4j.LoggerFactory
 
 object NbpCobblePlus {
@@ -34,6 +36,7 @@ object NbpCobblePlus {
         // Carrega configurações
         NbpConfig.load()
         PokemonLootConfig.load()
+        MissionsConfigFile.load()
 
         // Registra módulos
         FeatureManager.register(BroadcastFeature)
@@ -53,6 +56,7 @@ object NbpCobblePlus {
         FeatureManager.register(SafariZoneFeature)
         FeatureManager.register(WagerBattleFeature)
         FeatureManager.register(ServerEventsFeature)
+        FeatureManager.register(MissionsFeature)
 
         // Inicializa módulos
         FeatureManager.initAll()
