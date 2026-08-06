@@ -14,6 +14,7 @@ import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.feature.impl.PointsFeature
 import com.nbp.cobbleplus.feature.impl.MissionsFeature
+import com.nbp.cobbleplus.feature.impl.RctBattleConditionFeature
 import com.nbp.cobbleplus.feature.impl.GtsFeature
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import com.nbp.cobbleplus.hud.CatchComboHudRenderer
@@ -201,6 +202,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             com.nbp.cobbleplus.feature.impl.WagerBattleFeature.tick(event.server)
             ServerEventsFeature.tick(event.server)
             MissionsFeature.tick(event.server)
+            RctBattleConditionFeature.tick(event.server)
         }
 
         NeoForge.EVENT_BUS.addListener { event: PlayerInteractEvent.EntityInteract ->

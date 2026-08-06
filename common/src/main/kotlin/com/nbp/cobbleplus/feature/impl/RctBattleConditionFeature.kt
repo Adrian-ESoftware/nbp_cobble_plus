@@ -1,0 +1,82 @@
+package com.nbp.cobbleplus.feature.impl
+
+import com.cobblemon.mod.common.api.battles.model.PokemonBattle
+import com.cobblemon.mod.common.api.events.CobblemonEvents
+import com.cobblemon.mod.common.entity.npc.NPCBattleActor
+import com.nbp.cobbleplus.config.NbpConfig
+import com.nbp.cobbleplus.feature.FeatureModule
+import net.minecraft.server.MinecraftServer
+import java.util.UUID
+
+/**
+ * Bridges RCT trainer ids to permanent Showdown field conditions.  RCT is optional;
+ * NPCs which do not expose getTrainerId() are simply ignored.
+ */
+object RctBattleConditionFeature : FeatureModule {
+    override val name = "RCT permanent battle conditions"
+    override val isEnabled get() = NbpConfig.data.rctBattleCondition.enabled
+    private val active = mutableMapOf<UUID, Pair<PokemonBattle, String>>()
+    private var subscribed = false
+
+    override fun onEnable() {
+        if (subscribed) return
+        subscribed = true
+        CobblemonEvents.BATTLE_STARTED_POST.subscribe { event ->
+            val condition = event.battle.actors
+                .filterIsInstance<NPCBattleActor>()
+                .firstNotNullOfOrNull { trainerCondition(it.npc) }
+                ?: return@subscribe
+            active[event.battle.battleId] = event.battle to condition
+            apply(event.battle, condition)
+        }
+    }
+
+    override fun onDisable() {
+        active.clear()
+        subscribed = false
+    }
+
+    fun tick(server: MinecraftServer) {
+        if (!isEnabled) return
+        val expired = active.filterValues { it.first.ended }.keys
+        expired.forEach(active::remove)
+        // Re-apply every second so moves/abilities cannot remove the configured condition.
+        if (server.tickCount % 20 != 0) return
+        active.values.forEach { (battle, condition) -> apply(battle, condition) }
+    }
+
+    private fun trainerCondition(npc: Any): String? {
+        val id = runCatching {
+            npc.javaClass.methods.firstOrNull { it.name == "getTrainerId" && it.parameterCount == 0 }
+                ?.invoke(npc) as? String
+        }.getOrNull() ?: return null
+        return NbpConfig.data.rctBattleCondition.trainerConditions.entries
+            .firstOrNull { it.key.equals(id, ignoreCase = true) }
+            ?.value
+            ?.trim()
+            ?.lowercase()
+            ?.takeIf { it.isNotEmpty() }
+    }
+
+    private fun apply(battle: PokemonBattle, condition: String) {
+        val id = when (condition) {
+            "rain", "raindance" -> "RainDance"
+            "sun", "sunny", "sunnyday" -> "SunnyDay"
+            "sand", "sandstorm" -> "Sandstorm"
+            "hail" -> "Hail"
+            "snow" -> "Snow"
+            "electric", "electricterrain" -> "ElectricTerrain"
+            "grassy", "grassyterrain" -> "GrassyTerrain"
+            "misty", "mistyterrain" -> "MistyTerrain"
+            "psychic", "psychicterrain" -> "PsychicTerrain"
+            else -> return
+        }
+        // The eval command is handled by Cobblemon's bundled Showdown service.
+        // A very large duration makes the effect permanent for this battle.
+        val script = if (id.endsWith("Terrain"))
+            "battle.field.setTerrain('$id'); battle.field.terrainState.duration = 999999"
+        else
+            "battle.field.setWeather('$id'); battle.field.weatherState.duration = 999999"
+        runCatching { battle.writeShowdownAction(">eval $script") }
+    }
+}

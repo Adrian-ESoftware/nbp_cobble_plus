@@ -14,6 +14,7 @@ import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.feature.impl.PointsFeature
 import com.nbp.cobbleplus.feature.impl.MissionsFeature
+import com.nbp.cobbleplus.feature.impl.RctBattleConditionFeature
 import com.nbp.cobbleplus.feature.impl.GtsFeature
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
@@ -169,6 +170,7 @@ class NbpCobblePlusFabric : ModInitializer {
             com.nbp.cobbleplus.feature.impl.WagerBattleFeature.tick(server)
             ServerEventsFeature.tick(server)
             MissionsFeature.tick(server)
+            RctBattleConditionFeature.tick(server)
         }
 
         ServerLifecycleEvents.SERVER_STARTING.register { server ->

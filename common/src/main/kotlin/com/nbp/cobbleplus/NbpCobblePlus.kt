@@ -24,6 +24,7 @@ import com.nbp.cobbleplus.config.MissionsConfigFile
 import com.nbp.cobbleplus.feature.impl.MissionsFeature
 import com.nbp.cobbleplus.feature.impl.SynchronizedNaturesFeature
 import com.nbp.cobbleplus.feature.impl.GtsFeature
+import com.nbp.cobbleplus.feature.impl.RctBattleConditionFeature
 import org.slf4j.LoggerFactory
 
 object NbpCobblePlus {
@@ -61,6 +62,7 @@ object NbpCobblePlus {
         FeatureManager.register(MissionsFeature)
         FeatureManager.register(SynchronizedNaturesFeature)
         FeatureManager.register(GtsFeature)
+        FeatureManager.register(RctBattleConditionFeature)
 
         // Inicializa módulos
         FeatureManager.initAll()

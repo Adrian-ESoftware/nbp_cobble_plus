@@ -391,6 +391,13 @@ data class GtsConfig(
     var maxListingsPerPlayer: Int = 10,
     var pageSize: Int = 45
 )
+
+/** Permanent battle field effects applied to Radical Cobblemon Trainers. */
+data class RctBattleConditionConfig(
+    var enabled: Boolean = true,
+    /** Maps an RCT trainer id to a Showdown weather/terrain id (e.g. "rain", "electricterrain"). */
+    var trainerConditions: Map<String, String> = emptyMap()
+)
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
@@ -409,7 +416,8 @@ data class ModConfigData(
     var points: PointsConfig = PointsConfig(),
     var missions: MissionsConfig = MissionsConfig(),
     var synchronizedNatures: SynchronizedNaturesConfig = SynchronizedNaturesConfig(),
-    var gts: GtsConfig = GtsConfig()
+    var gts: GtsConfig = GtsConfig(),
+    var rctBattleCondition: RctBattleConditionConfig = RctBattleConditionConfig()
 )
 
 object NbpConfig {
