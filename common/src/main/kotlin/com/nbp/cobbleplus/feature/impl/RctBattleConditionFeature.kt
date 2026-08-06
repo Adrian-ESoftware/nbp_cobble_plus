@@ -71,8 +71,9 @@ object RctBattleConditionFeature : FeatureModule {
 
     private fun apply(battle: PokemonBattle, condition: String) {
         val id = when (condition) {
-            "rain", "raindance" -> "raindance"
-            "sun", "sunny", "sunnyday" -> "sunnyday"
+            // These are the native permanent weather effects used by Primal Kyogre/Groudon.
+            "rain", "raindance", "primordialsea" -> "primordialsea"
+            "sun", "sunny", "sunnyday", "desolateland" -> "desolateland"
             "sand", "sandstorm" -> "sandstorm"
             "hail" -> "hail"
             "snow" -> "snow"
@@ -85,9 +86,9 @@ object RctBattleConditionFeature : FeatureModule {
         // The eval command is handled by Cobblemon's bundled Showdown service.
         // A very large duration makes the effect permanent for this battle.
         val script = if (id.endsWith("terrain"))
-            "battle.field.setTerrain('$id', 'debug'); battle.field.terrainState.duration = 999999"
+            "battle.field.setTerrain('$id', 'debug'); battle.field.terrainState.duration = 0"
         else
-            "battle.field.setWeather('$id', 'debug'); battle.field.weatherState.duration = 999999"
+            "battle.field.setWeather('$id', 'debug'); battle.field.weatherState.duration = 0"
         runCatching { battle.writeShowdownAction(">eval $script") }
             .onFailure { logger.warn("Could not apply RCT condition '{}'", condition, it) }
     }
