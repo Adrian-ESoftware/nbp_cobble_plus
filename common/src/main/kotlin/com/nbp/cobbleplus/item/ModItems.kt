@@ -37,7 +37,10 @@ class TrainerEditorItem : Item(Properties().stacksTo(1)) {
                 team = mutableListOf(EditableTrainerPokemon(species = "pikachu", level = 1))
             )
             RctTrainerEditor.write(player.server, trainer)
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§aTreinador criado: §e${trainer.id}§a. Use /reload para registrar no RCT."))
+            val source = player.server.createCommandSourceStack()
+                .withPosition(player.position())
+            runCatching { player.server.commands.performPrefixedCommand(source, "rctmod trainer summon_persistent ${trainer.id}") }
+            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§aDefinição criada: §e${trainer.id}§a. Se o NPC não aparecer, use /reload e o item novamente."))
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide)
     }
