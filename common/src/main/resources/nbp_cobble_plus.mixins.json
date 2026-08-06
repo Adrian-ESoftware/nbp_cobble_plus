@@ -13,6 +13,7 @@
     ,"PokemonPastureBlockEntityMixin"
     ,"EndDragonFightAccessor"
     ,"PokemonSpawnActionMixin"
+    ,"RctTrainerManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -2,6 +2,9 @@ package com.nbp.cobbleplus.item
 
 import com.nbp.cobbleplus.feature.impl.ItemMechanicsFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
+import com.nbp.cobbleplus.feature.impl.EditableRctTrainer
+import com.nbp.cobbleplus.feature.impl.EditableTrainerPokemon
+import com.nbp.cobbleplus.feature.impl.RctRuntimeRegistry
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
@@ -28,9 +31,15 @@ class TrainerEditorItem : Item(Properties().stacksTo(1)) {
     override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
         if (!level.isClientSide && player is ServerPlayer) {
-            // The definition is intentionally kept in memory. The datapack and NPC
-            // are created only by the editor's Save action.
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§bEditor aberto. Configure o treinador e use Salvar para criar o datapack e o NPC."))
+            val id = "nbp_${player.gameProfile.name.lowercase().replace(Regex("[^a-z0-9_]+"), "_")}" 
+            val definition = EditableRctTrainer(id = id, name = "Trainer de ${player.gameProfile.name}", team = mutableListOf(EditableTrainerPokemon()))
+            if (!RctRuntimeRegistry.register(definition)) {
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§cRCT não está disponível ou rejeitou o treinador temporário."))
+            } else {
+                val source = player.server.createCommandSourceStack().withPermission(4).withPosition(player.position())
+                runCatching { player.server.commands.performPrefixedCommand(source, "rctmod trainer summon_persistent $id") }
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§aEditor temporário criado: §e$id§a. O salvamento definitivo será feito pela interface."))
+            }
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide)
     }
