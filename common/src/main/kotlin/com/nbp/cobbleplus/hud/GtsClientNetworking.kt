@@ -4,4 +4,7 @@ package com.nbp.cobbleplus.hud
 object GtsClientNetworking {
     var purchase: (Long) -> Unit = {}
     var collect: () -> Unit = {}
+    var sell: (Int, Long) -> Unit = { _, _ -> }
+    var cancel: (Long) -> Unit = {}
+    var requestParty: () -> Unit = {}
 }

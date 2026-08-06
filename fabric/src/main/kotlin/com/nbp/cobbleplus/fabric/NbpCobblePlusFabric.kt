@@ -24,8 +24,12 @@ import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.network.PointsViewSyncPayload
 import com.nbp.cobbleplus.network.MissionsViewSyncPayload
 import com.nbp.cobbleplus.network.GtsViewSyncPayload
+import com.nbp.cobbleplus.network.GtsPartyViewPayload
 import com.nbp.cobbleplus.network.GtsPurchasePayload
 import com.nbp.cobbleplus.network.GtsCollectPayload
+import com.nbp.cobbleplus.network.GtsSellPayload
+import com.nbp.cobbleplus.network.GtsCancelPayload
+import com.nbp.cobbleplus.network.GtsRequestPartyPayload
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -90,12 +94,17 @@ class NbpCobblePlusFabric : ModInitializer {
         }
         PayloadTypeRegistry.playS2C().register(MissionsViewSyncPayload.TYPE, MissionsViewSyncPayload.CODEC)
         PayloadTypeRegistry.playS2C().register(GtsViewSyncPayload.TYPE, GtsViewSyncPayload.CODEC)
+        PayloadTypeRegistry.playS2C().register(GtsPartyViewPayload.TYPE, GtsPartyViewPayload.CODEC)
         PayloadTypeRegistry.playC2S().register(GtsPurchasePayload.TYPE, GtsPurchasePayload.CODEC)
         PayloadTypeRegistry.playC2S().register(GtsCollectPayload.TYPE, GtsCollectPayload.CODEC)
+        PayloadTypeRegistry.playC2S().register(GtsSellPayload.TYPE, GtsSellPayload.CODEC)
+        PayloadTypeRegistry.playC2S().register(GtsCancelPayload.TYPE, GtsCancelPayload.CODEC)
+        PayloadTypeRegistry.playC2S().register(GtsRequestPartyPayload.TYPE, GtsRequestPartyPayload.CODEC)
         MissionsFeature.viewNetworkSender = { player, portuguese, daily, weekly ->
             ServerPlayNetworking.send(player, MissionsViewSyncPayload(portuguese, daily, weekly))
         }
         GtsFeature.viewNetworkSender = { player, payload -> ServerPlayNetworking.send(player, payload) }
+        GtsFeature.partyViewNetworkSender = { player, payload -> ServerPlayNetworking.send(player, payload) }
 
         ServerPlayNetworking.registerGlobalReceiver(GtsPurchasePayload.TYPE) { payload, context ->
             context.server().execute {
@@ -107,6 +116,23 @@ class NbpCobblePlusFabric : ModInitializer {
             context.server().execute {
                 GtsFeature.collect(context.player())
                 GtsFeature.sendView(context.player())
+            }
+        }
+        ServerPlayNetworking.registerGlobalReceiver(GtsSellPayload.TYPE) { payload, context ->
+            context.server().execute {
+                GtsFeature.sell(context.player(), payload.partySlot, payload.price)
+                GtsFeature.sendView(context.player())
+            }
+        }
+        ServerPlayNetworking.registerGlobalReceiver(GtsCancelPayload.TYPE) { payload, context ->
+            context.server().execute {
+                GtsFeature.cancel(context.player(), payload.listingId)
+                GtsFeature.sendView(context.player())
+            }
+        }
+        ServerPlayNetworking.registerGlobalReceiver(GtsRequestPartyPayload.TYPE) { _, context ->
+            context.server().execute {
+                GtsFeature.sendPartyView(context.player())
             }
         }
 

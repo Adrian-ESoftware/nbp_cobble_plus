@@ -27,8 +27,12 @@ import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.network.PointsViewSyncPayload
 import com.nbp.cobbleplus.network.MissionsViewSyncPayload
 import com.nbp.cobbleplus.network.GtsViewSyncPayload
+import com.nbp.cobbleplus.network.GtsPartyViewPayload
 import com.nbp.cobbleplus.network.GtsPurchasePayload
 import com.nbp.cobbleplus.network.GtsCollectPayload
+import com.nbp.cobbleplus.network.GtsSellPayload
+import com.nbp.cobbleplus.network.GtsCancelPayload
+import com.nbp.cobbleplus.network.GtsRequestPartyPayload
 import com.nbp.cobbleplus.hud.GtsScreen
 import com.nbp.cobbleplus.hud.GtsClientNetworking
 import com.nbp.cobbleplus.i18n.PlayerLanguage
@@ -102,6 +106,12 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
                     if (current is GtsScreen) current.update(payload) else Minecraft.getInstance().setScreen(GtsScreen(payload))
                 }
             }
+            registrar.playToClient(GtsPartyViewPayload.TYPE, GtsPartyViewPayload.CODEC) { payload, _ ->
+                Minecraft.getInstance().execute {
+                    val current = Minecraft.getInstance().screen
+                    if (current is GtsScreen) current.updateParty(payload)
+                }
+            }
             registrar.playToServer(GtsPurchasePayload.TYPE, GtsPurchasePayload.CODEC) { payload, context ->
                 (context.player() as? ServerPlayer)?.let { player ->
                     GtsFeature.purchase(player, payload.listingId)
@@ -112,6 +122,23 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
                 (context.player() as? ServerPlayer)?.let { player ->
                     GtsFeature.collect(player)
                     GtsFeature.sendView(player)
+                }
+            }
+            registrar.playToServer(GtsSellPayload.TYPE, GtsSellPayload.CODEC) { payload, context ->
+                (context.player() as? ServerPlayer)?.let { player ->
+                    GtsFeature.sell(player, payload.partySlot, payload.price)
+                    GtsFeature.sendView(player)
+                }
+            }
+            registrar.playToServer(GtsCancelPayload.TYPE, GtsCancelPayload.CODEC) { payload, context ->
+                (context.player() as? ServerPlayer)?.let { player ->
+                    GtsFeature.cancel(player, payload.listingId)
+                    GtsFeature.sendView(player)
+                }
+            }
+            registrar.playToServer(GtsRequestPartyPayload.TYPE, GtsRequestPartyPayload.CODEC) { _, context ->
+                (context.player() as? ServerPlayer)?.let { player ->
+                    GtsFeature.sendPartyView(player)
                 }
             }
         }
@@ -129,9 +156,13 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             PacketDistributor.sendToPlayer(player, MissionsViewSyncPayload(portuguese, daily, weekly))
         }
         GtsFeature.viewNetworkSender = { player, payload -> PacketDistributor.sendToPlayer(player, payload) }
+        GtsFeature.partyViewNetworkSender = { player, payload -> PacketDistributor.sendToPlayer(player, payload) }
         if (FMLEnvironment.dist == Dist.CLIENT) {
             GtsClientNetworking.purchase = { id -> PacketDistributor.sendToServer(GtsPurchasePayload(id)) }
             GtsClientNetworking.collect = { PacketDistributor.sendToServer(GtsCollectPayload()) }
+            GtsClientNetworking.sell = { slot, price -> PacketDistributor.sendToServer(GtsSellPayload(slot, price)) }
+            GtsClientNetworking.cancel = { id -> PacketDistributor.sendToServer(GtsCancelPayload(id)) }
+            GtsClientNetworking.requestParty = { PacketDistributor.sendToServer(GtsRequestPartyPayload()) }
         }
 
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent ->

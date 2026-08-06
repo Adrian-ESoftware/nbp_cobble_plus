@@ -1,12 +1,16 @@
 package com.nbp.cobbleplus.feature.impl
 
 import com.cobblemon.mod.common.Cobblemon
+import com.cobblemon.mod.common.api.pokemon.PokemonProperties
+import com.cobblemon.mod.common.api.pokemon.stats.Stats
 import com.cobblemon.mod.common.item.PokemonItem
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.nbp.cobbleplus.config.NbpConfig
 import com.nbp.cobbleplus.feature.FeatureModule
 import com.nbp.cobbleplus.network.GtsViewRow
 import com.nbp.cobbleplus.network.GtsViewSyncPayload
+import com.nbp.cobbleplus.network.GtsPartyRow
+import com.nbp.cobbleplus.network.GtsPartyViewPayload
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.RegistryAccess
 import net.minecraft.core.component.DataComponents
@@ -27,6 +31,7 @@ object GtsFeature : FeatureModule {
     override val isEnabled get() = NbpConfig.data.gts.enabled
     private var store: GtsSavedData? = null
     var viewNetworkSender: ((ServerPlayer, GtsViewSyncPayload) -> Unit)? = null
+    var partyViewNetworkSender: ((ServerPlayer, GtsPartyViewPayload) -> Unit)? = null
 
     override fun onEnable() = Unit
     override fun onDisable() = Unit
@@ -38,7 +43,7 @@ object GtsFeature : FeatureModule {
     }
 
     fun open(player: ServerPlayer) {
-        if (!isEnabled) { player.displayClientMessage(Component.literal("§cO GTS está desativado."), true); return }
+        if (!isEnabled) { player.displayClientMessage(Component.literal("§cThe GTS is disabled."), true); return }
         val data = requireStore()
         val listings = data.listings.take(NbpConfig.data.gts.pageSize.coerceIn(1, 45))
         if (viewNetworkSender != null) {
@@ -52,7 +57,7 @@ object GtsFeature : FeatureModule {
             }
         }
         player.openMenu(object : MenuProvider {
-            override fun getDisplayName(): Component = Component.literal("GTS - Pokémon à venda")
+            override fun getDisplayName(): Component = Component.literal("GTS - Pokémon for sale")
             override fun createMenu(id: Int, inventory: Inventory, p: Player) =
                 GtsMenu(id, inventory, items, listings.map { it.id })
         })
@@ -62,46 +67,78 @@ object GtsFeature : FeatureModule {
         val data = requireStore()
         val rows = data.listings.take(NbpConfig.data.gts.pageSize.coerceIn(1, 45)).mapNotNull { listing ->
             val pokemon = decode(player.server.registryAccess(), listing.pokemon) ?: return@mapNotNull null
-            GtsViewRow(listing.id, pokemon.species.resourceIdentifier.toString(), pokemon.shiny, listing.sellerName, listing.price)
+            GtsViewRow(
+                listing.id, pokemon.species.resourceIdentifier.toString(), pokemon.shiny,
+                listing.sellerName, listing.price, pokemon.level,
+                stripNamespace(pokemon.nature.name.toString()),
+                stripNamespace(pokemon.ability.name.toString()),
+                calculateIvPct(pokemon), calculateEvPct(pokemon),
+                stripNamespace(pokemon.gender.name.toString()),
+                stripNamespace(pokemon.form.name.toString()),
+                getIv(pokemon, Stats.HP), getIv(pokemon, Stats.ATTACK), getIv(pokemon, Stats.DEFENCE),
+                getIv(pokemon, Stats.SPECIAL_ATTACK), getIv(pokemon, Stats.SPECIAL_DEFENCE), getIv(pokemon, Stats.SPEED),
+                getEv(pokemon, Stats.HP), getEv(pokemon, Stats.ATTACK), getEv(pokemon, Stats.DEFENCE),
+                getEv(pokemon, Stats.SPECIAL_ATTACK), getEv(pokemon, Stats.SPECIAL_DEFENCE), getEv(pokemon, Stats.SPEED)
+            )
         }
         viewNetworkSender?.invoke(player, GtsViewSyncPayload(rows, CobbleDollarsBridge.balance(player).toString(), data.pendingPayments[player.uuid] ?: 0L))
     }
 
+    fun sendPartyView(player: ServerPlayer) {
+        val party = Cobblemon.storage.getParty(player)
+        val rows = (0 until 6).mapNotNull { slot ->
+            val pokemon = party.get(slot) ?: return@mapNotNull null
+            GtsPartyRow(
+                slot + 1, pokemon.species.resourceIdentifier.toString(), pokemon.level,
+                pokemon.shiny, stripNamespace(pokemon.nature.name.toString()),
+                stripNamespace(pokemon.ability.name.toString()),
+                calculateIvPct(pokemon), calculateEvPct(pokemon),
+                stripNamespace(pokemon.gender.name.toString()),
+                stripNamespace(pokemon.form.name.toString()),
+                getIv(pokemon, Stats.HP), getIv(pokemon, Stats.ATTACK), getIv(pokemon, Stats.DEFENCE),
+                getIv(pokemon, Stats.SPECIAL_ATTACK), getIv(pokemon, Stats.SPECIAL_DEFENCE), getIv(pokemon, Stats.SPEED),
+                getEv(pokemon, Stats.HP), getEv(pokemon, Stats.ATTACK), getEv(pokemon, Stats.DEFENCE),
+                getEv(pokemon, Stats.SPECIAL_ATTACK), getEv(pokemon, Stats.SPECIAL_DEFENCE), getEv(pokemon, Stats.SPEED)
+            )
+        }
+        partyViewNetworkSender?.invoke(player, GtsPartyViewPayload(rows))
+    }
+
     fun sell(player: ServerPlayer, partySlot: Int, price: Long): Boolean {
-        if (!isEnabled) return fail(player, "O GTS está desativado.")
-        if (price <= 0) return fail(player, "O preço deve ser maior que zero.")
+        if (!isEnabled) return fail(player, "The GTS is disabled.")
+        if (price <= 0) return fail(player, "Price must be greater than zero.")
         val data = requireStore()
         val sellerListings = data.listings.count { it.seller == player.uuid }
         if (sellerListings >= NbpConfig.data.gts.maxListingsPerPlayer.coerceAtLeast(1))
-            return fail(player, "Você atingiu o limite de anúncios.")
+            return fail(player, "You have reached the maximum number of listings.")
         val party = Cobblemon.storage.getParty(player)
-        val pokemon = party.get(partySlot - 1) ?: return fail(player, "Não há Pokémon nesse slot da party.")
-        if (!pokemon.tradeable) return fail(player, "Esse Pokémon não pode ser negociado.")
+        val pokemon = party.get(partySlot - 1) ?: return fail(player, "No Pokémon in that party slot.")
+        if (!pokemon.tradeable) return fail(player, "This Pokémon cannot be traded.")
         val tag = pokemon.saveToNBT(player.server.registryAccess(), CompoundTag())
         party.remove(pokemon)
         val listing = GtsListing(data.nextId++, player.uuid, player.scoreboardName, price, tag)
         data.listings += listing
         data.setDirty()
-        player.displayClientMessage(Component.literal("§a${displayName(pokemon)} anunciado por §e$price CobbleDollars§a. ID: §e#${listing.id}§a. Para cancelar: §e/nbp gts cancel ${listing.id}"), false)
+        player.displayClientMessage(Component.literal("§a${displayName(pokemon)} listed for §e$price CobbleDollars§a. ID: §e#${listing.id}§a. To cancel: §e/nbp gts cancel ${listing.id}"), false)
         return true
     }
 
     fun purchase(player: Player, id: Long): Boolean {
         val buyer = player as? ServerPlayer ?: return false
         val data = requireStore()
-        val listing = data.listings.firstOrNull { it.id == id } ?: return fail(buyer, "Esse anúncio não está mais disponível.")
-        if (listing.seller == buyer.uuid) return fail(buyer, "Você não pode comprar seu próprio anúncio.")
+        val listing = data.listings.firstOrNull { it.id == id } ?: return fail(buyer, "That listing is no longer available.")
+        if (listing.seller == buyer.uuid) return fail(buyer, "You cannot buy your own listing.")
         val party = Cobblemon.storage.getParty(buyer)
         val position = (0 until 6).firstOrNull { party.get(it) == null }
-            ?: return fail(buyer, "Sua party está cheia.")
-        val pokemon = decode(buyer.server.registryAccess(), listing.pokemon) ?: return fail(buyer, "Dados do Pokémon inválidos.")
-        if (!CobbleDollarsBridge.spend(buyer, listing.price)) return fail(buyer, "Você não possui CobbleDollars suficientes.")
+            ?: return fail(buyer, "Your party is full.")
+        val pokemon = decode(buyer.server.registryAccess(), listing.pokemon) ?: return fail(buyer, "Invalid Pokémon data.")
+        if (!CobbleDollarsBridge.spend(buyer, listing.price)) return fail(buyer, "You don't have enough CobbleDollars.")
 
         party.set(position, pokemon)
         data.listings.removeIf { it.id == id }
         data.pendingPayments[listing.seller] = (data.pendingPayments[listing.seller] ?: 0L) + listing.price
         data.setDirty()
-        buyer.displayClientMessage(Component.literal("§aVocê comprou ${displayName(pokemon)} por §e${listing.price} CobbleDollars§a."), false)
+        buyer.displayClientMessage(Component.literal("§aYou bought ${displayName(pokemon)} for §e${listing.price} CobbleDollars§a."), false)
         claimPayments(buyer)
         sendView(buyer)
         return true
@@ -110,14 +147,29 @@ object GtsFeature : FeatureModule {
     fun cancel(player: ServerPlayer, id: Long): Boolean {
         val data = requireStore()
         val listing = data.listings.firstOrNull { it.id == id && it.seller == player.uuid }
-            ?: return fail(player, "Anúncio não encontrado ou não pertence a você.")
-        val pokemon = decode(player.server.registryAccess(), listing.pokemon) ?: return fail(player, "Dados do Pokémon inválidos.")
-        val position = (0 until 6).firstOrNull { Cobblemon.storage.getParty(player).get(it) == null }
-            ?: return fail(player, "Sua party está cheia; libere um espaço antes de cancelar.")
-        Cobblemon.storage.getParty(player).set(position, pokemon)
+            ?: return fail(player, "Listing not found or doesn't belong to you.")
+        val pokemon = decode(player.server.registryAccess(), listing.pokemon) ?: return fail(player, "Invalid Pokémon data.")
+        val pc = Cobblemon.storage.getPC(player)
+        var stored = false
+        for (box in 0 until 40) {
+            for (slot in 0 until 30) {
+                val position = com.cobblemon.mod.common.api.storage.pc.PCPosition(box, slot)
+                if (pc.get(position) == null) {
+                    pc.set(position, pokemon)
+                    stored = true
+                    break
+                }
+            }
+            if (stored) break
+        }
+        if (!stored) {
+            val partyPos = (0 until 6).firstOrNull { Cobblemon.storage.getParty(player).get(it) == null }
+                ?: return fail(player, "Your PC and party are both full.")
+            Cobblemon.storage.getParty(player).set(partyPos, pokemon)
+        }
         data.listings.remove(listing)
         data.setDirty()
-        player.displayClientMessage(Component.literal("§aAnúncio cancelado e Pokémon devolvido à party."), false)
+        player.displayClientMessage(Component.literal("§aListing cancelled and Pokémon returned to your PC."), false)
         return true
     }
 
@@ -131,12 +183,33 @@ object GtsFeature : FeatureModule {
         if (amount > 0 && CobbleDollarsBridge.earn(player, amount, false) > 0) {
             data.pendingPayments.remove(player.uuid)
             data.setDirty()
-            player.displayClientMessage(Component.literal("§aVocê recebeu §e$amount CobbleDollars§a pelas vendas do GTS."), false)
+            player.displayClientMessage(Component.literal("§aYou received §e$amount CobbleDollars§a from GTS sales."), false)
             sendView(player)
             return amount
         }
         return 0L
     }
+
+    private fun calculateIvPct(pokemon: Pokemon): Float {
+        val allStats = listOf(Stats.HP, Stats.ATTACK, Stats.DEFENCE, Stats.SPECIAL_ATTACK, Stats.SPECIAL_DEFENCE, Stats.SPEED)
+        val total = allStats.sumOf { pokemon.ivs.getOrDefault(it) }.toFloat()
+        val max = 31f * 6
+        return (total / max) * 100f
+    }
+
+    private fun calculateEvPct(pokemon: Pokemon): Float {
+        val allStats = listOf(Stats.HP, Stats.ATTACK, Stats.DEFENCE, Stats.SPECIAL_ATTACK, Stats.SPECIAL_DEFENCE, Stats.SPEED)
+        val total = allStats.sumOf { pokemon.evs.getOrDefault(it) }.toFloat()
+        return (total / 510f) * 100f
+    }
+
+    private fun getIv(pokemon: Pokemon, stat: com.cobblemon.mod.common.api.pokemon.stats.Stat): Int =
+        pokemon.ivs.getOrDefault(stat)
+
+    private fun getEv(pokemon: Pokemon, stat: com.cobblemon.mod.common.api.pokemon.stats.Stat): Int =
+        pokemon.evs.getOrDefault(stat)
+
+    private fun stripNamespace(s: String): String = if (s.contains(':')) s.substringAfter(':') else s
 
     private fun decode(registries: RegistryAccess, tag: CompoundTag): Pokemon? =
         runCatching { Pokemon().loadFromNBT(registries, tag.copy()) }.getOrNull()
