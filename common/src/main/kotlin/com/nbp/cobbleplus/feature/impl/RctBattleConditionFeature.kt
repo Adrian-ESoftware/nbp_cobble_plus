@@ -6,6 +6,7 @@ import com.cobblemon.mod.common.entity.npc.NPCBattleActor
 import com.nbp.cobbleplus.config.NbpConfig
 import com.nbp.cobbleplus.feature.FeatureModule
 import net.minecraft.server.MinecraftServer
+import org.slf4j.LoggerFactory
 import java.util.UUID
 
 /**
@@ -17,6 +18,7 @@ object RctBattleConditionFeature : FeatureModule {
     override val isEnabled get() = NbpConfig.data.rctBattleCondition.enabled
     private val active = mutableMapOf<UUID, Pair<PokemonBattle, String>>()
     private var subscribed = false
+    private val logger = LoggerFactory.getLogger("NBP-RCTConditions")
 
     override fun onEnable() {
         if (subscribed) return
@@ -27,6 +29,7 @@ object RctBattleConditionFeature : FeatureModule {
                 .firstNotNullOfOrNull { trainerCondition(it.npc) }
                 ?: return@subscribe
             active[event.battle.battleId] = event.battle to condition
+            logger.info("Applying permanent RCT condition '{}' to battle {}", condition, event.battle.battleId)
             apply(event.battle, condition)
         }
     }
@@ -60,23 +63,24 @@ object RctBattleConditionFeature : FeatureModule {
 
     private fun apply(battle: PokemonBattle, condition: String) {
         val id = when (condition) {
-            "rain", "raindance" -> "RainDance"
-            "sun", "sunny", "sunnyday" -> "SunnyDay"
-            "sand", "sandstorm" -> "Sandstorm"
-            "hail" -> "Hail"
-            "snow" -> "Snow"
-            "electric", "electricterrain" -> "ElectricTerrain"
-            "grassy", "grassyterrain" -> "GrassyTerrain"
-            "misty", "mistyterrain" -> "MistyTerrain"
-            "psychic", "psychicterrain" -> "PsychicTerrain"
+            "rain", "raindance" -> "raindance"
+            "sun", "sunny", "sunnyday" -> "sunnyday"
+            "sand", "sandstorm" -> "sandstorm"
+            "hail" -> "hail"
+            "snow" -> "snow"
+            "electric", "electricterrain" -> "electricterrain"
+            "grassy", "grassyterrain" -> "grassyterrain"
+            "misty", "mistyterrain" -> "mistyterrain"
+            "psychic", "psychicterrain" -> "psychicterrain"
             else -> return
         }
         // The eval command is handled by Cobblemon's bundled Showdown service.
         // A very large duration makes the effect permanent for this battle.
-        val script = if (id.endsWith("Terrain"))
-            "battle.field.setTerrain('$id'); battle.field.terrainState.duration = 999999"
+        val script = if (id.endsWith("terrain"))
+            "battle.field.setTerrain('$id', 'debug'); battle.field.terrainState.duration = 999999"
         else
-            "battle.field.setWeather('$id'); battle.field.weatherState.duration = 999999"
+            "battle.field.setWeather('$id', 'debug'); battle.field.weatherState.duration = 999999"
         runCatching { battle.writeShowdownAction(">eval $script") }
+            .onFailure { logger.warn("Could not apply RCT condition '{}'", condition, it) }
     }
 }
