@@ -1,8 +1,9 @@
 package com.nbp.cobbleplus.feature.impl
 
 import com.cobblemon.mod.common.api.battles.model.PokemonBattle
+import com.cobblemon.mod.common.api.battles.model.actor.ActorType
+import com.cobblemon.mod.common.api.battles.model.actor.EntityBackedBattleActor
 import com.cobblemon.mod.common.api.events.CobblemonEvents
-import com.cobblemon.mod.common.entity.npc.NPCBattleActor
 import com.nbp.cobbleplus.config.NbpConfig
 import com.nbp.cobbleplus.feature.FeatureModule
 import net.minecraft.server.MinecraftServer
@@ -24,10 +25,15 @@ object RctBattleConditionFeature : FeatureModule {
         if (subscribed) return
         subscribed = true
         CobblemonEvents.BATTLE_STARTED_POST.subscribe { event ->
-            val condition = event.battle.actors
-                .filterIsInstance<NPCBattleActor>()
-                .firstNotNullOfOrNull { trainerCondition(it.npc) }
-                ?: return@subscribe
+            val npcActors = event.battle.actors.filter { it.type == ActorType.NPC }
+            val condition = npcActors.firstNotNullOfOrNull { actor ->
+                val entity = (actor as? EntityBackedBattleActor<*>)?.entity
+                entity?.let(::trainerCondition)
+            }
+            if (condition == null) {
+                logger.info("RCT battle {} has no configured trainer condition (NPC actors: {})", event.battle.battleId, npcActors.count())
+                return@subscribe
+            }
             active[event.battle.battleId] = event.battle to condition
             logger.info("Applying permanent RCT condition '{}' to battle {}", condition, event.battle.battleId)
             apply(event.battle, condition)
@@ -53,6 +59,7 @@ object RctBattleConditionFeature : FeatureModule {
             npc.javaClass.methods.firstOrNull { it.name == "getTrainerId" && it.parameterCount == 0 }
                 ?.invoke(npc) as? String
         }.getOrNull() ?: return null
+        logger.info("Detected RCT trainer id '{}'", id)
         return NbpConfig.data.rctBattleCondition.trainerConditions.entries
             .firstOrNull { it.key.equals(id, ignoreCase = true) }
             ?.value
