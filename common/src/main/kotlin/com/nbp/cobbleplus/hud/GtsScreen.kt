@@ -13,11 +13,11 @@ class GtsScreen(payload: GtsViewSyncPayload) : Screen(Component.literal("GTS")) 
     private var rows: List<GtsViewRow> = payload.rows
     private var balance = payload.balance
     private var pending = payload.pending
-    private val panelWidth = 560
-    private val panelHeight = 360
-    private val columns = 5
-    private val cardWidth = 104
-    private val cardHeight = 78
+    private val panelWidth = 500
+    private val panelHeight = 300
+    private val columns = 4
+    private val cardWidth = 118
+    private val cardHeight = 74
 
     override fun renderBlurredBackground(partialTick: Float) = Unit
     override fun isPauseScreen(): Boolean = false
@@ -44,7 +44,7 @@ class GtsScreen(payload: GtsViewSyncPayload) : Screen(Component.literal("GTS")) 
             GtsClientNetworking.collect()
             return true
         }
-        rows.forEachIndexed { index, row ->
+        rows.take(12).forEachIndexed { index, row ->
             val bounds = cardBounds(index)
             if (mouseX in bounds[0].toDouble()..(bounds[0] + bounds[2]).toDouble() && mouseY in bounds[1].toDouble()..(bounds[1] + bounds[3]).toDouble()) {
                 GtsClientNetworking.purchase(row.id)
@@ -65,7 +65,7 @@ class GtsScreen(payload: GtsViewSyncPayload) : Screen(Component.literal("GTS")) 
         graphics.fill(x + panelWidth - 170, y + 20, x + panelWidth - 20, y + 42, 0xFF2E8B57.toInt())
         graphics.drawCenteredString(font, "§fColetar", x + panelWidth - 95, y + 27, 0xFFFFFFFF.toInt())
 
-        rows.forEachIndexed { index, row ->
+        rows.take(12).forEachIndexed { index, row ->
             val bounds = cardBounds(index)
             val hovered = mouseX in bounds[0]..(bounds[0] + bounds[2]) && mouseY in bounds[1]..(bounds[1] + bounds[3])
             graphics.fill(bounds[0], bounds[1], bounds[0] + bounds[2], bounds[1] + bounds[3], if (hovered) 0xFF344C63.toInt() else 0xFF263342.toInt())
@@ -75,7 +75,7 @@ class GtsScreen(payload: GtsViewSyncPayload) : Screen(Component.literal("GTS")) 
             graphics.drawCenteredString(font, "§a${row.price} CD", bounds[0] + bounds[2] / 2, bounds[1] + 56, 0xFFFFFFFF.toInt())
             if (hovered) graphics.renderTooltip(font, stack, mouseX, mouseY)
         }
-        if (rows.isEmpty()) graphics.drawCenteredString(font, "§7Nenhum Pokémon anunciado.", width / 2, y + 180, 0xFFFFFFFF.toInt())
+        if (rows.isEmpty()) graphics.drawCenteredString(font, "§7Nenhum Pokémon anunciado.", width / 2, y + 150, 0xFFFFFFFF.toInt())
         super.render(graphics, mouseX, mouseY, partialTick)
     }
 }

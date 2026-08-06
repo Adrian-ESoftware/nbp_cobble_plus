@@ -53,8 +53,10 @@ data class GtsPurchasePayload(val listingId: Long) : CustomPacketPayload {
 
 class GtsCollectPayload : CustomPacketPayload {
     override fun type(): CustomPacketPayload.Type<GtsCollectPayload> = TYPE
+    private fun write(buf: FriendlyByteBuf) = Unit
     companion object {
         val TYPE = CustomPacketPayload.Type<GtsCollectPayload>(ResourceLocation.fromNamespaceAndPath(NbpCobblePlus.MOD_ID, "gts_collect"))
-        val CODEC: StreamCodec<FriendlyByteBuf, GtsCollectPayload> = StreamCodec.unit(GtsCollectPayload())
+        val CODEC: StreamCodec<FriendlyByteBuf, GtsCollectPayload> =
+            CustomPacketPayload.codec(GtsCollectPayload::write) { GtsCollectPayload() }
     }
 }
