@@ -279,6 +279,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             register("dna_syringe_mew", Supplier { ModItems.DNA_SYRINGE_MEW })
             register("dna_syringe_mewtwo", Supplier { ModItems.DNA_SYRINGE_MEWTWO })
             register("capture_permit", Supplier { ModItems.CAPTURE_PERMIT })
+            register("trainer_editor", Supplier { ModItems.TRAINER_EDITOR })
             register("ruby_ore", Supplier { BlockItem(ModBlocks.RUBY_ORE, Item.Properties()) })
             register("palkia_block", Supplier { BlockItem(ModBlocks.PALKIA_BLOCK, Item.Properties()) })
             register("used_palkia_block", Supplier { BlockItem(ModBlocks.USED_PALKIA_BLOCK, Item.Properties()) })
@@ -298,7 +299,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
                     .displayItems { _, output ->
                         listOf<ItemLike>(
                             ModItems.AZURE_FLUTE, ModItems.URN_OF_THUNDER, ModItems.URN_OF_FREEZING, ModItems.URN_OF_BURNING,
-                            ModItems.RUBY, ModItems.RED_CHAIN, ModItems.DNA_SYRINGE_EMPTY, ModItems.DNA_SYRINGE_MEW, ModItems.DNA_SYRINGE_MEWTWO, ModItems.CAPTURE_PERMIT,
+                            ModItems.RUBY, ModItems.RED_CHAIN, ModItems.DNA_SYRINGE_EMPTY, ModItems.DNA_SYRINGE_MEW, ModItems.DNA_SYRINGE_MEWTWO, ModItems.CAPTURE_PERMIT, ModItems.TRAINER_EDITOR,
                             ModBlocks.RUBY_ORE, ModBlocks.PALKIA_BLOCK, ModBlocks.USED_PALKIA_BLOCK, ModBlocks.DIALGA_BLOCK,
                             ModBlocks.USED_DIALGA_BLOCK, ModBlocks.GIRATINA_BLOCK, ModBlocks.USED_GIRATINA_BLOCK,
                             ModBlocks.ARCEUS_CHALICE, ModBlocks.USED_ARCEUS_CHALICE

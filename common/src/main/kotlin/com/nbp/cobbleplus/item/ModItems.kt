@@ -21,6 +21,17 @@ object ModItems {
     val DNA_SYRINGE_MEW = Item(Item.Properties().stacksTo(16))
     val DNA_SYRINGE_MEWTWO = Item(Item.Properties().stacksTo(16))
     val CAPTURE_PERMIT = CapturePermitItem()
+    val TRAINER_EDITOR = TrainerEditorItem()
+}
+
+class TrainerEditorItem : Item(Properties().stacksTo(1)) {
+    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+        val stack = player.getItemInHand(hand)
+        if (!level.isClientSide && player is ServerPlayer) {
+            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§bEditor de Treinador: interface em preparação."))
+        }
+        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide)
+    }
 }
 
 class CapturePermitItem : Item(Properties().stacksTo(16)) {

@@ -1,0 +1,4 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {"layer0": "nbp_cobble_plus:item/red_chain"}
+}
