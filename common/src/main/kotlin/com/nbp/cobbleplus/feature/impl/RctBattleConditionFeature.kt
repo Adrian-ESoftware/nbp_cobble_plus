@@ -49,8 +49,9 @@ object RctBattleConditionFeature : FeatureModule {
         if (!isEnabled) return
         val expired = active.filterValues { it.first.ended }.keys
         expired.forEach(active::remove)
-        // Re-apply every second so moves/abilities cannot remove the configured condition.
-        if (server.tickCount % 20 != 0) return
+        // Refresh several times per second so the normal five-turn expiry can never win
+        // a race against the permanent trainer condition.
+        if (server.tickCount % 5 != 0) return
         active.values.forEach { (battle, condition) -> apply(battle, condition) }
     }
 
