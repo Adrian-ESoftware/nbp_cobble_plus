@@ -38,8 +38,14 @@ object RctTrainerEditor {
 
     fun write(server: MinecraftServer, trainer: EditableRctTrainer): Path {
         require(trainer.id.matches(Regex("[a-z0-9_./-]+"))) { "Invalid trainer id" }
-        val root = server.getWorldPath(LevelResource.ROOT)
-            .resolve("datapacks/nbp_generated_trainers/data/rctmod/trainers")
+        val datapack = server.getWorldPath(LevelResource.ROOT)
+            .resolve("datapacks/nbp_generated_trainers")
+        val root = datapack.resolve("data/rctmod/trainers")
+        Files.createDirectories(datapack)
+        Files.writeString(
+            datapack.resolve("pack.mcmeta"),
+            "{\"pack\":{\"pack_format\":48,\"description\":\"NBP generated RCT trainers\"}}"
+        )
         Files.createDirectories(root)
         val json = JsonObject().apply {
             addProperty("name", trainer.name)

@@ -38,6 +38,7 @@ class TrainerEditorItem : Item(Properties().stacksTo(1)) {
             )
             RctTrainerEditor.write(player.server, trainer)
             val source = player.server.createCommandSourceStack()
+                .withPermission(4)
                 .withPosition(player.position())
             runCatching { player.server.commands.performPrefixedCommand(source, "rctmod trainer summon_persistent ${trainer.id}") }
             player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§aDefinição criada: §e${trainer.id}§a. Se o NPC não aparecer, use /reload e o item novamente."))
