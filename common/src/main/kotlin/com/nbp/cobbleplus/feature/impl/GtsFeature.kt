@@ -5,6 +5,8 @@ import com.cobblemon.mod.common.item.PokemonItem
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.nbp.cobbleplus.config.NbpConfig
 import com.nbp.cobbleplus.feature.FeatureModule
+import com.nbp.cobbleplus.network.GtsViewRow
+import com.nbp.cobbleplus.network.GtsViewSyncPayload
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.RegistryAccess
 import net.minecraft.core.component.DataComponents
@@ -24,6 +26,7 @@ object GtsFeature : FeatureModule {
     override val name = "Global Trade Station"
     override val isEnabled get() = NbpConfig.data.gts.enabled
     private var store: GtsSavedData? = null
+    var viewNetworkSender: ((ServerPlayer, GtsViewSyncPayload) -> Unit)? = null
 
     override fun onEnable() = Unit
     override fun onDisable() = Unit
@@ -38,6 +41,10 @@ object GtsFeature : FeatureModule {
         if (!isEnabled) { player.displayClientMessage(Component.literal("§cO GTS está desativado."), true); return }
         val data = requireStore()
         val listings = data.listings.take(NbpConfig.data.gts.pageSize.coerceIn(1, 45))
+        if (viewNetworkSender != null) {
+            sendView(player)
+            return
+        }
         val items = listings.map { listing ->
             val pokemon = decode(player.server.registryAccess(), listing.pokemon) ?: return@map ItemStack.EMPTY
             PokemonItem.from(pokemon).also { stack ->
@@ -49,6 +56,15 @@ object GtsFeature : FeatureModule {
             override fun createMenu(id: Int, inventory: Inventory, p: Player) =
                 GtsMenu(id, inventory, items, listings.map { it.id })
         })
+    }
+
+    fun sendView(player: ServerPlayer) {
+        val data = requireStore()
+        val rows = data.listings.take(NbpConfig.data.gts.pageSize.coerceIn(1, 45)).mapNotNull { listing ->
+            val pokemon = decode(player.server.registryAccess(), listing.pokemon) ?: return@mapNotNull null
+            GtsViewRow(listing.id, pokemon.species.resourceIdentifier.toString(), pokemon.shiny, listing.sellerName, listing.price)
+        }
+        viewNetworkSender?.invoke(player, GtsViewSyncPayload(rows, CobbleDollarsBridge.balance(player).toString(), data.pendingPayments[player.uuid] ?: 0L))
     }
 
     fun sell(player: ServerPlayer, partySlot: Int, price: Long): Boolean {
@@ -87,6 +103,7 @@ object GtsFeature : FeatureModule {
         data.setDirty()
         buyer.displayClientMessage(Component.literal("§aVocê comprou ${displayName(pokemon)} por §e${listing.price} CobbleDollars§a."), false)
         claimPayments(buyer)
+        sendView(buyer)
         return true
     }
 
@@ -115,6 +132,7 @@ object GtsFeature : FeatureModule {
             data.pendingPayments.remove(player.uuid)
             data.setDirty()
             player.displayClientMessage(Component.literal("§aVocê recebeu §e$amount CobbleDollars§a pelas vendas do GTS."), false)
+            sendView(player)
             return amount
         }
         return 0L

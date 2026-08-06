@@ -26,6 +26,11 @@ import com.nbp.cobbleplus.network.CatchComboSyncPayload
 import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.network.PointsViewSyncPayload
 import com.nbp.cobbleplus.network.MissionsViewSyncPayload
+import com.nbp.cobbleplus.network.GtsViewSyncPayload
+import com.nbp.cobbleplus.network.GtsPurchasePayload
+import com.nbp.cobbleplus.network.GtsCollectPayload
+import com.nbp.cobbleplus.hud.GtsScreen
+import com.nbp.cobbleplus.hud.GtsClientNetworking
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.minecraft.server.level.ServerPlayer
 import net.neoforged.api.distmarker.Dist
@@ -91,6 +96,24 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
                     Minecraft.getInstance().setScreen(MissionsScreen(payload.portuguese, payload.daily, payload.weekly))
                 }
             }
+            registrar.playToClient(GtsViewSyncPayload.TYPE, GtsViewSyncPayload.CODEC) { payload, _ ->
+                Minecraft.getInstance().execute {
+                    val current = Minecraft.getInstance().screen
+                    if (current is GtsScreen) current.update(payload) else Minecraft.getInstance().setScreen(GtsScreen(payload))
+                }
+            }
+            registrar.playToServer(GtsPurchasePayload.TYPE, GtsPurchasePayload.CODEC) { payload, context ->
+                (context.player() as? ServerPlayer)?.let { player ->
+                    GtsFeature.purchase(player, payload.listingId)
+                    GtsFeature.sendView(player)
+                }
+            }
+            registrar.playToServer(GtsCollectPayload.TYPE, GtsCollectPayload.CODEC) { _, context ->
+                (context.player() as? ServerPlayer)?.let { player ->
+                    GtsFeature.collect(player)
+                    GtsFeature.sendView(player)
+                }
+            }
         }
 
         CatchComboFeature.networkSender = { player, lines ->
@@ -104,6 +127,11 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
         }
         MissionsFeature.viewNetworkSender = { player, portuguese, daily, weekly ->
             PacketDistributor.sendToPlayer(player, MissionsViewSyncPayload(portuguese, daily, weekly))
+        }
+        GtsFeature.viewNetworkSender = { player, payload -> PacketDistributor.sendToPlayer(player, payload) }
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            GtsClientNetworking.purchase = { id -> PacketDistributor.sendToServer(GtsPurchasePayload(id)) }
+            GtsClientNetworking.collect = { PacketDistributor.sendToServer(GtsCollectPayload()) }
         }
 
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent ->

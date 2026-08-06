@@ -6,10 +6,15 @@ import com.nbp.cobbleplus.hud.PointsRewardHudRenderer
 import com.nbp.cobbleplus.hud.PointsRewardHudState
 import com.nbp.cobbleplus.hud.PointsScreen
 import com.nbp.cobbleplus.hud.MissionsScreen
+import com.nbp.cobbleplus.hud.GtsScreen
+import com.nbp.cobbleplus.hud.GtsClientNetworking
 import com.nbp.cobbleplus.network.CatchComboSyncPayload
 import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.network.PointsViewSyncPayload
 import com.nbp.cobbleplus.network.MissionsViewSyncPayload
+import com.nbp.cobbleplus.network.GtsViewSyncPayload
+import com.nbp.cobbleplus.network.GtsPurchasePayload
+import com.nbp.cobbleplus.network.GtsCollectPayload
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
@@ -37,6 +42,15 @@ class NbpCobblePlusFabricClient : ClientModInitializer {
                 Minecraft.getInstance().setScreen(MissionsScreen(payload.portuguese, payload.daily, payload.weekly))
             }
         }
+
+        ClientPlayNetworking.registerGlobalReceiver(GtsViewSyncPayload.TYPE) { payload, _ ->
+            Minecraft.getInstance().execute {
+                val current = Minecraft.getInstance().screen
+                if (current is GtsScreen) current.update(payload) else Minecraft.getInstance().setScreen(GtsScreen(payload))
+            }
+        }
+        GtsClientNetworking.purchase = { id -> ClientPlayNetworking.send(GtsPurchasePayload(id)) }
+        GtsClientNetworking.collect = { ClientPlayNetworking.send(GtsCollectPayload()) }
 
         HudRenderCallback.EVENT.register { guiGraphics, _ ->
             val window = guiGraphics.guiWidth()

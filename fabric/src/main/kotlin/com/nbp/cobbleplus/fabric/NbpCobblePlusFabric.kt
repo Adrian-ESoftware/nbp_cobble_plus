@@ -23,6 +23,9 @@ import com.nbp.cobbleplus.network.CatchComboSyncPayload
 import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.network.PointsViewSyncPayload
 import com.nbp.cobbleplus.network.MissionsViewSyncPayload
+import com.nbp.cobbleplus.network.GtsViewSyncPayload
+import com.nbp.cobbleplus.network.GtsPurchasePayload
+import com.nbp.cobbleplus.network.GtsCollectPayload
 import com.nbp.cobbleplus.i18n.PlayerLanguage
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -86,8 +89,25 @@ class NbpCobblePlusFabric : ModInitializer {
             ServerPlayNetworking.send(player, PointsViewSyncPayload(portuguese, values))
         }
         PayloadTypeRegistry.playS2C().register(MissionsViewSyncPayload.TYPE, MissionsViewSyncPayload.CODEC)
+        PayloadTypeRegistry.playS2C().register(GtsViewSyncPayload.TYPE, GtsViewSyncPayload.CODEC)
+        PayloadTypeRegistry.playC2S().register(GtsPurchasePayload.TYPE, GtsPurchasePayload.CODEC)
+        PayloadTypeRegistry.playC2S().register(GtsCollectPayload.TYPE, GtsCollectPayload.CODEC)
         MissionsFeature.viewNetworkSender = { player, portuguese, daily, weekly ->
             ServerPlayNetworking.send(player, MissionsViewSyncPayload(portuguese, daily, weekly))
+        }
+        GtsFeature.viewNetworkSender = { player, payload -> ServerPlayNetworking.send(player, payload) }
+
+        ServerPlayNetworking.registerGlobalReceiver(GtsPurchasePayload.TYPE) { payload, context ->
+            context.server().execute {
+                GtsFeature.purchase(context.player(), payload.listingId)
+                GtsFeature.sendView(context.player())
+            }
+        }
+        ServerPlayNetworking.registerGlobalReceiver(GtsCollectPayload.TYPE) { _, context ->
+            context.server().execute {
+                GtsFeature.collect(context.player())
+                GtsFeature.sendView(context.player())
+            }
         }
 
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
