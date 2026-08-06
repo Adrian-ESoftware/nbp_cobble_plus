@@ -39,7 +39,6 @@ object MissionGenerator {
                 target = target,
                 quantity = quantity,
                 rewardRolls = rolls,
-                bucketId = def.bucket,
                 sequence = def.sequence
             )
         }

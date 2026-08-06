@@ -34,7 +34,7 @@ import java.util.UUID
 /**
  * Sistema de missões diárias (por jogador) e semanais (server-wide, a 1ª conclusão trava
  * e concede as recompensas aos demais). Gera missões das definições de [MissionsConfigFile],
- * acompanha progresso nos eventos de captura/derrota e concede os buckets de recompensa.
+ * acompanha progresso nos eventos de captura/derrota e concede as recompensas da dificuldade.
  */
 object MissionsFeature : FeatureModule {
     override val name = "Missions system"
@@ -294,8 +294,8 @@ object MissionsFeature : FeatureModule {
     }
 
     private fun grantRewards(player: ServerPlayer, inst: MissionInstance): List<RewardRollResult> {
-        val bucket = MissionsConfigFile.data.buckets[inst.bucketId] ?: emptyList()
-        val rolled = MissionRewardRoller.roll(bucket, inst.rewardRolls)
+        val rewards = MissionsConfigFile.data.difficulties[inst.difficulty]?.rewards ?: emptyList()
+        val rolled = MissionRewardRoller.roll(rewards, inst.rewardRolls)
         rolled.forEach { result ->
             runCatching {
                 val item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(result.itemId)).orElse(null)
@@ -347,7 +347,7 @@ object MissionsFeature : FeatureModule {
     }
 
     private fun rewardPreview(inst: MissionInstance): List<RewardViewRow> =
-        MissionsConfigFile.data.buckets[inst.bucketId]
+        MissionsConfigFile.data.difficulties[inst.difficulty]?.rewards
             ?.map { RewardViewRow(it.item, it.max) }
             ?: emptyList()
 
@@ -479,9 +479,9 @@ object MissionsFeature : FeatureModule {
         return false
     }
 
-    fun testReward(player: ServerPlayer, bucketId: String): List<RewardRollResult> {
-        val bucket = MissionsConfigFile.data.buckets[bucketId] ?: return emptyList()
-        return MissionRewardRoller.roll(bucket, 3)
+    fun testReward(player: ServerPlayer, difficultyId: String): List<RewardRollResult> {
+        val rewards = MissionsConfigFile.data.difficulties[difficultyId]?.rewards ?: return emptyList()
+        return MissionRewardRoller.roll(rewards, 3)
     }
 
     /** Completa todas as missões ativas de um ciclo para o jogador (comando admin). */

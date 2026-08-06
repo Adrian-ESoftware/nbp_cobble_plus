@@ -10,7 +10,6 @@ data class MissionDefinition(
     var action: String = "capture",
     var target: MissionTargetConfig = MissionTargetConfig(),
     var difficulties: MutableList<String> = mutableListOf("easy", "medium"),
-    var bucket: String = "",
     var rolls: Int = 0,
     var sequence: Boolean = false
 )

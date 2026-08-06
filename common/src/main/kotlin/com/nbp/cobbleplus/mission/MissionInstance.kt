@@ -17,7 +17,6 @@ class MissionInstance(
     val target: MissionTargetValue?,
     val quantity: Int,
     val rewardRolls: Int,
-    val bucketId: String,
     val sequence: Boolean,
     var progress: Int = 0,
     var completed: Boolean = false,
@@ -32,7 +31,6 @@ class MissionInstance(
         tag.putString("definitionId", definitionId)
         tag.putString("action", action.id)
         tag.putString("difficulty", difficulty)
-        tag.putString("bucketId", bucketId)
         tag.putInt("quantity", quantity)
         tag.putInt("rewardRolls", rewardRolls)
         tag.putInt("progress", progress)
@@ -68,7 +66,6 @@ class MissionInstance(
                 },
                 quantity = tag.getInt("quantity"),
                 rewardRolls = tag.getInt("rewardRolls"),
-                bucketId = tag.getString("bucketId"),
                 sequence = tag.getBoolean("sequence"),
                 progress = tag.getInt("progress"),
                 completed = tag.getBoolean("completed"),

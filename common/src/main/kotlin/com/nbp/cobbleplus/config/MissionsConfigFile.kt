@@ -11,7 +11,7 @@ import java.io.FileReader
 import java.io.FileWriter
 
 /**
- * Carrega as definições de missões (dificuldades, buckets de recompensa e templates)
+ * Carrega as definições de missões (dificuldades com recompensas e templates)
  * do arquivo `config/nbp_cobble_plus/missions.json` — mesmo padrão do PokemonLootConfig.
  * Caso falhe, o módulo continua com os padrões embutidos.
  */
@@ -32,7 +32,7 @@ object MissionsConfigFile {
                 MissionsData().also { save(it) }
             }
             sanitize(data)
-            NbpCobblePlus.logger.info("Loaded missions: ${data.missions.size} definitions, ${data.buckets.size} reward buckets")
+            NbpCobblePlus.logger.info("Loaded missions: ${data.missions.size} definitions, ${data.difficulties.size} difficulties")
         } catch (exception: Exception) {
             NbpCobblePlus.logger.error("Failed to load ${file.path}; missions definitions keep defaults", exception)
             data = MissionsData()
@@ -53,18 +53,15 @@ object MissionsConfigFile {
             diff.requireLabels = diff.requireLabels.map(String::trim).filter(String::isNotEmpty).distinct().toMutableList()
             diff.excludeLabels = diff.excludeLabels.map(String::trim).filter(String::isNotEmpty).distinct().toMutableList()
             diff.maxPokedex = diff.maxPokedex.coerceAtLeast(0)
-        }
-        value.buckets.entries.removeAll { (_, entries) -> entries.isEmpty() }
-        value.buckets.values.forEach { entries ->
-            entries.forEach { entry ->
+            diff.rewards = diff.rewards.map { entry ->
                 entry.item = entry.item.trim()
                 entry.chance = entry.chance.coerceIn(0.0, 100.0)
                 entry.min = entry.min.coerceAtLeast(1)
                 entry.max = entry.max.coerceAtLeast(entry.min)
-            }
-            entries.removeIf { it.item.isEmpty() }
+                entry
+            }.filter { it.item.isNotEmpty() }.toMutableList()
         }
-        value.missions.removeIf { it.id.isBlank() || it.bucket.isBlank() }
+        value.missions.removeIf { it.id.isBlank() }
         value.missions.forEach { mission ->
             mission.action = if (MissionAction.byId(mission.action) != null) mission.action.lowercase() else "capture"
             mission.cycle = when {

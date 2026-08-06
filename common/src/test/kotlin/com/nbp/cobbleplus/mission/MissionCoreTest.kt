@@ -69,15 +69,15 @@ class MissionCoreTest {
     // ─── MissionRewardRoller ───────────────────────────────────────────────────
 
     @Test
-    fun `empty bucket or zero rolls yields nothing`() {
+    fun `empty rewards or zero rolls yields nothing`() {
         assertTrue(MissionRewardRoller.roll(emptyList(), 3, Random(1)).isEmpty())
         assertTrue(MissionRewardRoller.roll(listOf(RewardEntry()), 0, Random(1)).isEmpty())
     }
 
     @Test
     fun `first roll is forced when no entry hits`() {
-        val bucket = listOf(RewardEntry(item = "minecraft:stick", chance = 0.0, min = 1, max = 1))
-        val rolled = MissionRewardRoller.roll(bucket, 3, Random(42))
+        val rewards = listOf(RewardEntry(item = "minecraft:stick", chance = 0.0, min = 1, max = 1))
+        val rolled = MissionRewardRoller.roll(rewards, 3, Random(42))
         assertEquals(1, rolled.size)
         assertEquals("minecraft:stick", rolled.first().itemId)
         assertEquals(1, rolled.first().count)
@@ -85,16 +85,16 @@ class MissionCoreTest {
 
     @Test
     fun `every roll hits when chance is certain`() {
-        val bucket = listOf(RewardEntry(item = "minecraft:stick", chance = 100.0, min = 2, max = 5))
-        val rolled = MissionRewardRoller.roll(bucket, 10, Random(7))
+        val rewards = listOf(RewardEntry(item = "minecraft:stick", chance = 100.0, min = 2, max = 5))
+        val rolled = MissionRewardRoller.roll(rewards, 10, Random(7))
         assertEquals(10, rolled.size)
         rolled.forEach { assertTrue(it.count in 2..5) }
     }
 
     @Test
     fun `forced first roll count stays within entry range`() {
-        val bucket = listOf(RewardEntry(item = "minecraft:gold_ingot", chance = 0.0, min = 3, max = 8))
-        val rolled = MissionRewardRoller.roll(bucket, 5, Random(1))
+        val rewards = listOf(RewardEntry(item = "minecraft:gold_ingot", chance = 0.0, min = 3, max = 8))
+        val rolled = MissionRewardRoller.roll(rewards, 5, Random(1))
         assertEquals(1, rolled.size)
         assertTrue(rolled.first().count in 3..8)
     }
@@ -131,7 +131,7 @@ class MissionCoreTest {
     @Test
     fun `kind species draws from the difficulty species pool`() {
         val defs = listOf(
-            MissionDefinition(id = "s", action = "capture", target = MissionTargetConfig(kind = "species"), difficulties = mutableListOf("easy"), bucket = "starter")
+            MissionDefinition(id = "s", action = "capture", target = MissionTargetConfig(kind = "species"), difficulties = mutableListOf("easy"))
         )
         val pool = listOf("bulbasaur", "charmander", "squirtle")
         val generated = MissionGenerator.generate(defs, difficulties, MissionCycle.DAILY, 1, { pool }, types, natures, Random(2))
@@ -143,7 +143,7 @@ class MissionCoreTest {
     @Test
     fun `fixed species list in target is used instead of the pool`() {
         val defs = listOf(
-            MissionDefinition(id = "f", action = "capture", target = MissionTargetConfig(kind = "species", species = mutableListOf("eevee")), difficulties = mutableListOf("easy"), bucket = "starter")
+            MissionDefinition(id = "f", action = "capture", target = MissionTargetConfig(kind = "species", species = mutableListOf("eevee")), difficulties = mutableListOf("easy"))
         )
         val generated = MissionGenerator.generate(defs, difficulties, MissionCycle.DAILY, 1, { listOf("pikachu") }, types, natures, Random(3))
         assertEquals("eevee", generated.first().target?.species)
@@ -152,7 +152,7 @@ class MissionCoreTest {
     @Test
     fun `quantity respects difficulty range`() {
         val defs = listOf(
-            MissionDefinition(id = "q", action = "capture", target = MissionTargetConfig(kind = "any"), difficulties = mutableListOf("easy"), bucket = "starter")
+            MissionDefinition(id = "q", action = "capture", target = MissionTargetConfig(kind = "any"), difficulties = mutableListOf("easy"))
         )
         val generated = MissionGenerator.generate(defs, difficulties, MissionCycle.DAILY, 5, { listOf("pikachu") }, types, natures, Random(4))
         generated.forEach { assertTrue(it.quantity in 3..5) }
@@ -176,7 +176,6 @@ class MissionCoreTest {
             target = MissionTargetValue(species = "garchomp", type = "dragon"),
             quantity = 12,
             rewardRolls = 3,
-            bucketId = "advanced",
             sequence = true,
             progress = 4,
             completed = true,
@@ -191,7 +190,6 @@ class MissionCoreTest {
         assertEquals("dragon", restored.target?.type)
         assertEquals(12, restored.quantity)
         assertEquals(3, restored.rewardRolls)
-        assertEquals("advanced", restored.bucketId)
         assertTrue(restored.sequence)
         assertEquals(4, restored.progress)
         assertTrue(restored.completed)
@@ -209,7 +207,6 @@ class MissionCoreTest {
             target = null,
             quantity = 5,
             rewardRolls = 1,
-            bucketId = "starter",
             sequence = false
         )
         val restored = MissionInstance.fromTag(inst.toTag())

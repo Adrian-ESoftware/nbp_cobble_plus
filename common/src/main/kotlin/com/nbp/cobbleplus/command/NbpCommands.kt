@@ -459,9 +459,9 @@ object NbpCommands {
                                 Commands.argument("player", EntityArgument.player())
                                     .executes { context ->
                                         val target = EntityArgument.getPlayer(context, "player")
-                                        val bucketId = MissionsConfigFile.data.buckets.keys.firstOrNull()
-                                        val rolls = if (bucketId != null) MissionsFeature.testReward(target, bucketId) else emptyList()
-                                        context.source.sendSuccess({ Component.literal("§a$rolls recompensa(s) gerada(s) para §e${target.scoreboardName}§a (bucket: $bucketId).") }, true)
+                                        val difficultyId = MissionsConfigFile.data.difficulties.keys.firstOrNull()
+                                        val rolls = if (difficultyId != null) MissionsFeature.testReward(target, difficultyId) else emptyList()
+                                        context.source.sendSuccess({ Component.literal("§a$rolls recompensa(s) gerada(s) para §e${target.scoreboardName}§a (dificuldade: $difficultyId).") }, true)
                                         1
                                     }
                             )

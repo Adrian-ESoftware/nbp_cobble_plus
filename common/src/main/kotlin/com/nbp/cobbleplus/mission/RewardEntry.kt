@@ -1,6 +1,6 @@
 package com.nbp.cobbleplus.mission
 
-/** Uma entrada do bucket de recompensas: item + chance (%) + quantidade mínima/máxima. */
+/** Uma entrada de recompensa: item + chance (%) + quantidade mínima/máxima. */
 data class RewardEntry(
     var item: String = "minecraft:stick",
     var chance: Double = 50.0,

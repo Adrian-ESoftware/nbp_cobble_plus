@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import net.minecraft.resources.ResourceLocation
 
-/** Recompensa exibida na tela (ícone do item + quantidade máxima do bucket). */
+/** Recompensa exibida na tela (ícone do item + quantidade máxima da dificuldade). */
 data class RewardViewRow(val itemId: String, val count: Int)
 
 /** Linha de uma missão na tela; strings já resolvidas no servidor. */
