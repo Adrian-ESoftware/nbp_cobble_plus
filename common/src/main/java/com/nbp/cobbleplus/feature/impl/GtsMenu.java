@@ -9,6 +9,8 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.component.DataComponents;
 
 import java.util.List;
 
@@ -22,10 +24,17 @@ public final class GtsMenu extends ChestMenu {
         for (int i = 0; i < Math.min(45, listingItems.size()); i++) {
             getContainer().setItem(i, listingItems.get(i));
         }
+        ItemStack collect = new ItemStack(Items.EMERALD);
+        collect.set(DataComponents.CUSTOM_NAME, Component.literal("§aColetar pagamentos do GTS"));
+        getContainer().setItem(49, collect);
     }
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
+        if (slotId == 49 && player instanceof ServerPlayer serverPlayer) {
+            GtsFeature.INSTANCE.collect(serverPlayer);
+            return;
+        }
         if (slotId >= 0 && slotId < listingIds.size() && clickType != ClickType.QUICK_CRAFT) {
             if (GtsFeature.INSTANCE.purchase(player, listingIds.get(slotId)) && player instanceof ServerPlayer serverPlayer) serverPlayer.closeContainer();
             return;

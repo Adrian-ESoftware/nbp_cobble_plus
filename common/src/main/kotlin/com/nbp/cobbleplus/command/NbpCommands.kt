@@ -58,6 +58,7 @@ object NbpCommands {
                                 "§e/nbp gts §7- Abre o Global Trade Station\n" +
                                 "§e/nbp gts sell <slot> <preço> §7- Anuncia um Pokémon\n" +
                                 "§e/nbp gts cancel <id> §7- Cancela um anúncio seu\n" +
+                                "§e/nbp gts collect §7- Coleta o dinheiro das vendas\n" +
                                 "§e/nbp legendary test [espécie] §7- Testa um spawn lendário (Admin)\n" +
                                 "§e/nbp legendary test-natural §7- Executa o sorteio natural completo (Admin)\n" +
                                 "§e/nbp legendary chance §7- Mostra sua chance atual de anfitrião\n" +
@@ -211,6 +212,17 @@ object NbpCommands {
                                 if (player == null) { context.source.sendFailure(Component.literal("Apenas jogadores podem cancelar anúncios.")); 0 }
                                 else if (GtsFeature.cancel(player, LongArgumentType.getLong(context, "id"))) 1 else 0
                             })
+                    )
+                    .then(
+                        Commands.literal("collect").executes { context ->
+                            val player = context.source.player
+                            if (player == null) {
+                                context.source.sendFailure(Component.literal("Apenas jogadores podem coletar pagamentos.")); 0
+                            } else {
+                                GtsFeature.collect(player)
+                                1
+                            }
+                        }
                     )
             )
             .then(

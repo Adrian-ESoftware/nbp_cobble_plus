@@ -29,7 +29,10 @@ object GtsFeature : FeatureModule {
     override fun onDisable() = Unit
 
     fun bindServer(server: MinecraftServer) { store = GtsSavedData.get(server) }
-    fun unbindServer() { store = null }
+    fun unbindServer() {
+        store?.setDirty()
+        store = null
+    }
 
     fun open(player: ServerPlayer) {
         if (!isEnabled) { player.displayClientMessage(Component.literal("§cO GTS está desativado."), true); return }
@@ -102,12 +105,19 @@ object GtsFeature : FeatureModule {
     }
 
     fun claimPayments(player: ServerPlayer) {
+        collect(player)
+    }
+
+    fun collect(player: ServerPlayer): Long {
         val data = requireStore()
-        val amount = data.pendingPayments.remove(player.uuid) ?: return
+        val amount = data.pendingPayments[player.uuid] ?: return 0L
         if (amount > 0 && CobbleDollarsBridge.earn(player, amount, false) > 0) {
+            data.pendingPayments.remove(player.uuid)
             data.setDirty()
             player.displayClientMessage(Component.literal("§aVocê recebeu §e$amount CobbleDollars§a pelas vendas do GTS."), false)
+            return amount
         }
+        return 0L
     }
 
     private fun decode(registries: RegistryAccess, tag: CompoundTag): Pokemon? =
@@ -147,7 +157,7 @@ private class GtsSavedData : SavedData() {
             data.nextId = tag.getLong("nextId").coerceAtLeast(1L)
             tag.getList("listings", 10).forEach { raw ->
                 val entry = raw as CompoundTag
-                runCatching { UUID.fromString(entry.getString("seller")) }.getOrNull()?.let { seller ->
+                runCatching { entry.getUUID("seller") }.getOrNull()?.let { seller ->
                     data.listings += GtsListing(entry.getLong("id"), seller, entry.getString("sellerName"), entry.getLong("price"), entry.getCompound("pokemon"))
                 }
             }
