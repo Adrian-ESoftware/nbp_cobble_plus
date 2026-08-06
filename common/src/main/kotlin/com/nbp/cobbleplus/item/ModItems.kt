@@ -2,6 +2,9 @@ package com.nbp.cobbleplus.item
 
 import com.nbp.cobbleplus.feature.impl.ItemMechanicsFeature
 import com.nbp.cobbleplus.feature.impl.CaptureCapFeature
+import com.nbp.cobbleplus.feature.impl.EditableRctTrainer
+import com.nbp.cobbleplus.feature.impl.EditableTrainerPokemon
+import com.nbp.cobbleplus.feature.impl.RctTrainerEditor
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
@@ -28,7 +31,13 @@ class TrainerEditorItem : Item(Properties().stacksTo(1)) {
     override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
         if (!level.isClientSide && player is ServerPlayer) {
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§bEditor de Treinador: interface em preparação."))
+            val trainer = EditableRctTrainer(
+                id = "nbp_${player.gameProfile.name.lowercase().replace(Regex("[^a-z0-9_]+"), "_")}",
+                name = "Trainer de ${player.gameProfile.name}",
+                team = mutableListOf(EditableTrainerPokemon(species = "pikachu", level = 1))
+            )
+            RctTrainerEditor.write(player.server, trainer)
+            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§aTreinador criado: §e${trainer.id}§a. Use /reload para registrar no RCT."))
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide)
     }
