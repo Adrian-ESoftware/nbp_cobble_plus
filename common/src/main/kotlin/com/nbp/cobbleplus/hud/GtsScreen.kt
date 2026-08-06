@@ -13,11 +13,11 @@ class GtsScreen(payload: GtsViewSyncPayload) : Screen(Component.literal("GTS")) 
     private var rows: List<GtsViewRow> = payload.rows
     private var balance = payload.balance
     private var pending = payload.pending
-    private val panelWidth: Int get() = minOf(320, width - 20)
-    private val panelHeight = 238
+    private val panelWidth: Int get() = minOf(270, width - 20)
+    private val panelHeight = 204
     private val columns = 4
     private val cardWidth: Int get() = (panelWidth - 24) / columns
-    private val cardHeight = 58
+    private val cardHeight = 65
 
     override fun renderBlurredBackground(partialTick: Float) = Unit
     override fun isPauseScreen(): Boolean = false
@@ -44,7 +44,7 @@ class GtsScreen(payload: GtsViewSyncPayload) : Screen(Component.literal("GTS")) 
             GtsClientNetworking.collect()
             return true
         }
-        rows.take(12).forEachIndexed { index, row ->
+        rows.take(8).forEachIndexed { index, row ->
             val bounds = cardBounds(index)
             if (mouseX in bounds[0].toDouble()..(bounds[0] + bounds[2]).toDouble() && mouseY in bounds[1].toDouble()..(bounds[1] + bounds[3]).toDouble()) {
                 GtsClientNetworking.purchase(row.id)
@@ -66,18 +66,18 @@ class GtsScreen(payload: GtsViewSyncPayload) : Screen(Component.literal("GTS")) 
         graphics.fill(x + panelWidth - 112, y + 18, x + panelWidth - 12, y + 42, 0xFF2E8B57.toInt())
         graphics.drawCenteredString(font, "§fColetar", x + panelWidth - 62, y + 25, 0xFFFFFFFF.toInt())
 
-        rows.take(12).forEachIndexed { index, row ->
+        rows.take(8).forEachIndexed { index, row ->
             val bounds = cardBounds(index)
             val hovered = mouseX in bounds[0]..(bounds[0] + bounds[2]) && mouseY in bounds[1]..(bounds[1] + bounds[3])
             graphics.fill(bounds[0], bounds[1], bounds[0] + bounds[2], bounds[1] + bounds[3], if (hovered) 0xFF344C63.toInt() else 0xFF263342.toInt())
             val stack = PokemonItem.from(PokemonProperties.parse("species=${row.species} shiny=${row.shiny}"))
             graphics.pose().pushPose()
-            graphics.pose().translate((bounds[0] + bounds[2] / 2 - 12).toDouble(), (bounds[1] - 1).toDouble(), 0.0)
-            graphics.pose().scale(3.0f, 3.0f, 1.0f)
+            graphics.pose().translate((bounds[0] + bounds[2] / 2 - 9).toDouble(), (bounds[1] + 1).toDouble(), 0.0)
+            graphics.pose().scale(2.3f, 2.3f, 1.0f)
             graphics.renderItem(stack, 0, 0)
             graphics.pose().popPose()
-            graphics.drawCenteredString(font, "§e#${row.id} §f${row.species.substringAfter(':').take(12)}", bounds[0] + bounds[2] / 2, bounds[1] + 38, 0xFFFFFFFF.toInt())
-            graphics.drawCenteredString(font, "§a${row.price} CD", bounds[0] + bounds[2] / 2, bounds[1] + 48, 0xFFFFFFFF.toInt())
+            graphics.drawCenteredString(font, "§e#${row.id} §f${row.species.substringAfter(':').take(9)}", bounds[0] + bounds[2] / 2, bounds[1] + 47, 0xFFFFFFFF.toInt())
+            graphics.drawCenteredString(font, "§a${row.price} CD", bounds[0] + bounds[2] / 2, bounds[1] + 58, 0xFFFFFFFF.toInt())
             if (hovered) graphics.renderTooltip(font, stack, mouseX, mouseY)
         }
         if (rows.isEmpty()) graphics.drawCenteredString(font, "§7Nenhum Pokémon anunciado.", width / 2, y + 150, 0xFFFFFFFF.toInt())
