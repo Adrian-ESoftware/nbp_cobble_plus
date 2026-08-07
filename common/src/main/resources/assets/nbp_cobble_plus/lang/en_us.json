@@ -51,6 +51,5 @@
   "message.nbp_cobble_plus.ruby.chain_missing": "You need Rubies charged by Uxie, Mesprit, and Azelf.",
   "message.nbp_cobble_plus.ruby.chain_created": "The three Lake Guardian Rubies formed the Red Chain.",
   "itemGroup.nbp_cobble_plus": "NBP Cobble Plus",
-  "item.nbp_cobble_plus.capture_permit": "Capture Permit",
-  "item.nbp_cobble_plus.trainer_editor": "Trainer Editor"
+  "item.nbp_cobble_plus.capture_permit": "Capture Permit"
 }

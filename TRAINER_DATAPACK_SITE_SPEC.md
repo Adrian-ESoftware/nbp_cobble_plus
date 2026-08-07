@@ -1,0 +1,1653 @@
+# Especificação do site — Criador de Datapacks RCT para Cobblemon
+
+## Objetivo
+
+Criar um site que permita montar treinadores do Radical Cobblemon Trainers (RCT) e exportar um datapack pronto para Minecraft 1.21.1, Cobblemon 1.7.3 e RCT 0.18.x. O site deve ser um editor visual inspirado no Pixelmon NPC Editor e Pokémon Editor, mas gerar JSON compatível com o RCT.
+
+## Funcionalidades obrigatórias
+
+### Dados do treinador
+
+- ID único em minúsculas, aceitando letras, números, `_`, `-`, `/` e `.`.
+- Nome exibido e série RCT.
+- Condição permanente opcional: `rain`, `sun`, `sand`, `hail`, `snow`, `electricterrain`, `grassyterrain`, `mistyterrain`, `psychicterrain`.
+- Invulnerável, imóvel, nameplate, force battle on sight, distância máxima, limite de vitórias/derrotas e cooldown.
+- Coordenadas opcionais do NPC.
+
+### Editor da equipe
+
+- Exatamente seis slots.
+- Busca de Pokémon em tempo real por nome, ID ou parte do nome.
+- Cada slot mostra espécie, forma, level, habilidade, item, natureza, shiny e gênero.
+- Adicionar, editar, remover, reordenar e randomizar equipe.
+- Copiar equipe por PokéPaste.
+- Importar/exportar Pokémon Showdown/PokéPaste.
+
+### Editor individual
+
+- Espécie e forma/aspect.
+- Nickname, level 1–100, gênero e shiny.
+- Habilidade, natureza, item segurado.
+- Até quatro golpes.
+- IVs 0–31 por atributo.
+- EVs 0–252 por atributo, máximo total 510.
+- Atalhos para IV máximo, IV aleatório, resetar IVs, resetar EVs e distribuição automática.
+- Validação de todos os IDs antes da exportação.
+
+### Exportação
+
+Gerar:
+
+```
+data/rctmod/trainers/<trainer_id>.json
+data/rctmod/mobs/trainers/single/<trainer_id>.json
+pack.mcmeta
+```
+
+O trainer JSON deve conter `name`, `ai`, `team`, `battleRules` e `bag`. O mob JSON deve conter `series`, `type`, opções de batalha e referência ao treinador. Permitir baixar ZIP e visualizar/copiar JSON.
+
+### Validação
+
+- Bloquear IDs duplicados, espécies/formas/golpes/habilidades/naturezas/itens inexistentes.
+- Bloquear mais de quatro golpes.
+- Bloquear IV >31, EV individual >252 e EV total >510.
+- Mostrar erro no campo correspondente.
+
+### Arquitetura sugerida
+
+- React/Next.js ou Vue/Nuxt com TypeScript.
+- Abas Geral, Equipe, Pokémon, PokéPaste e Exportação.
+- Estado local com Zustand/Redux.
+- Busca instantânea com debounce.
+- Catálogo JSON versionado por Minecraft/Cobblemon/mods.
+- Zod ou JSON Schema.
+- ZIP no navegador ou backend.
+- Testes unitários para validação e geração do datapack.
+
+### Modelo interno
+
+```ts
+type Trainer = {
+  id: string; name: string; series: string; condition?: string;
+  npc: { invulnerable: boolean; immobile: boolean; nameplate: boolean;
+    forceBattleOnSight: boolean; maxBattleDistance?: number;
+    winLimit?: number; lossLimit?: number; cooldownTicks?: number };
+  team: TrainerPokemon[];
+}
+type TrainerPokemon = {
+  species: string; form?: string; nickname?: string; level: number;
+  gender?: "MALE" | "FEMALE" | "GENDERLESS" | "RANDOM";
+  shiny: boolean; ability?: string; nature?: string; heldItem?: string;
+  moves: string[]; ivs: Record<string, number>; evs: Record<string, number>;
+}
+```
+
+## Catálogo de espécies
+
+Fonte: arquivos de espécie do Cobblemon 1.7.3 da instância de referência. Os IDs abaixo são IDs de recurso, não nomes de exibição. O site deve permitir substituir/atualizar o catálogo por versão.
+
+### Espécies implementadas
+
+- cobblemon:abra — Abra
+- cobblemon:absol — Absol
+- cobblemon:accelgor — Accelgor
+- cobblemon:aegislash — Aegislash
+- cobblemon:aerodactyl — Aerodactyl
+- cobblemon:aggron — Aggron
+- cobblemon:aipom — Aipom
+- cobblemon:alakazam — Alakazam
+- cobblemon:alcremie — Alcremie
+- cobblemon:alomomola — Alomomola
+- cobblemon:altaria — Altaria
+- cobblemon:amaura — Amaura
+- cobblemon:ambipom — Ambipom
+- cobblemon:amoonguss — Amoonguss
+- cobblemon:ampharos — Ampharos
+- cobblemon:annihilape — Annihilape
+- cobblemon:anorith — Anorith
+- cobblemon:araquanid — Araquanid
+- cobblemon:arbok — Arbok
+- cobblemon:arboliva — Arboliva
+- cobblemon:arcanine — Arcanine
+- cobblemon:archen — Archen
+- cobblemon:archeops — Archeops
+- cobblemon:arctovish — Arctovish
+- cobblemon:arctozolt — Arctozolt
+- cobblemon:ariados — Ariados
+- cobblemon:armaldo — Armaldo
+- cobblemon:armarouge — Armarouge
+- cobblemon:aromatisse — Aromatisse
+- cobblemon:aron — Aron
+- cobblemon:arrokuda — Arrokuda
+- cobblemon:articuno — Articuno
+- cobblemon:aurorus — Aurorus
+- cobblemon:avalugg — Avalugg
+- cobblemon:axew — Axew
+- cobblemon:azumarill — Azumarill
+- cobblemon:azurill — Azurill
+- cobblemon:bagon — Bagon
+- cobblemon:baltoy — Baltoy
+- cobblemon:banette — Banette
+- cobblemon:barbaracle — Barbaracle
+- cobblemon:barboach — Barboach
+- cobblemon:barraskewda — Barraskewda
+- cobblemon:basculegion — Basculegion
+- cobblemon:basculin — Basculin
+- cobblemon:bastiodon — Bastiodon
+- cobblemon:bayleef — Bayleef
+- cobblemon:beartic — Beartic
+- cobblemon:beedrill — Beedrill
+- cobblemon:beheeyem — Beheeyem
+- cobblemon:beldum — Beldum
+- cobblemon:bellibolt — Bellibolt
+- cobblemon:bellossom — Bellossom
+- cobblemon:bellsprout — Bellsprout
+- cobblemon:bergmite — Bergmite
+- cobblemon:bewear — Bewear
+- cobblemon:bibarel — Bibarel
+- cobblemon:bidoof — Bidoof
+- cobblemon:binacle — Binacle
+- cobblemon:blastoise — Blastoise
+- cobblemon:blaziken — Blaziken
+- cobblemon:blissey — Blissey
+- cobblemon:blitzle — Blitzle
+- cobblemon:boldore — Boldore
+- cobblemon:boltund — Boltund
+- cobblemon:bonsly — Bonsly
+- cobblemon:bouffalant — Bouffalant
+- cobblemon:bounsweet — Bounsweet
+- cobblemon:braixen — Braixen
+- cobblemon:brambleghast — Brambleghast
+- cobblemon:bramblin — Bramblin
+- cobblemon:braviary — Braviary
+- cobblemon:breloom — Breloom
+- cobblemon:brionne — Brionne
+- cobblemon:bronzong — Bronzong
+- cobblemon:bronzor — Bronzor
+- cobblemon:bruxish — Bruxish
+- cobblemon:budew — Budew
+- cobblemon:buizel — Buizel
+- cobblemon:bulbasaur — Bulbasaur
+- cobblemon:buneary — Buneary
+- cobblemon:bunnelby — Bunnelby
+- cobblemon:butterfree — Butterfree
+- cobblemon:cacnea — Cacnea
+- cobblemon:cacturne — Cacturne
+- cobblemon:camerupt — Camerupt
+- cobblemon:capsakid — Capsakid
+- cobblemon:carbink — Carbink
+- cobblemon:carnivine — Carnivine
+- cobblemon:carracosta — Carracosta
+- cobblemon:carvanha — Carvanha
+- cobblemon:caterpie — Caterpie
+- cobblemon:centiskorch — Centiskorch
+- cobblemon:ceruledge — Ceruledge
+- cobblemon:cetitan — Cetitan
+- cobblemon:cetoddle — Cetoddle
+- cobblemon:chandelure — Chandelure
+- cobblemon:chansey — Chansey
+- cobblemon:charcadet — Charcadet
+- cobblemon:charizard — Charizard
+- cobblemon:charmander — Charmander
+- cobblemon:charmeleon — Charmeleon
+- cobblemon:chatot — Chatot
+- cobblemon:chesnaught — Chesnaught
+- cobblemon:chespin — Chespin
+- cobblemon:chewtle — Chewtle
+- cobblemon:chikorita — Chikorita
+- cobblemon:chimchar — Chimchar
+- cobblemon:chimecho — Chimecho
+- cobblemon:chinchou — Chinchou
+- cobblemon:chingling — Chingling
+- cobblemon:cinccino — Cinccino
+- cobblemon:cinderace — Cinderace
+- cobblemon:clamperl — Clamperl
+- cobblemon:clauncher — Clauncher
+- cobblemon:clawitzer — Clawitzer
+- cobblemon:claydol — Claydol
+- cobblemon:clefable — Clefable
+- cobblemon:clefairy — Clefairy
+- cobblemon:cleffa — Cleffa
+- cobblemon:clobbopus — Clobbopus
+- cobblemon:clodsire — Clodsire
+- cobblemon:cloyster — Cloyster
+- cobblemon:cofagrigus — Cofagrigus
+- cobblemon:combee — Combee
+- cobblemon:combusken — Combusken
+- cobblemon:comfey — Comfey
+- cobblemon:conkeldurr — Conkeldurr
+- cobblemon:copperajah — Copperajah
+- cobblemon:corphish — Corphish
+- cobblemon:corsola — Corsola
+- cobblemon:corviknight — Corviknight
+- cobblemon:corvisquire — Corvisquire
+- cobblemon:cottonee — Cottonee
+- cobblemon:crabominable — Crabominable
+- cobblemon:crabrawler — Crabrawler
+- cobblemon:cradily — Cradily
+- cobblemon:cramorant — Cramorant
+- cobblemon:cranidos — Cranidos
+- cobblemon:crawdaunt — Crawdaunt
+- cobblemon:croagunk — Croagunk
+- cobblemon:crobat — Crobat
+- cobblemon:crocalor — Crocalor
+- cobblemon:croconaw — Croconaw
+- cobblemon:crustle — Crustle
+- cobblemon:cryogonal — Cryogonal
+- cobblemon:cubchoo — Cubchoo
+- cobblemon:cubone — Cubone
+- cobblemon:cufant — Cufant
+- cobblemon:cursola — Cursola
+- cobblemon:cutiefly — Cutiefly
+- cobblemon:cyclizar — Cyclizar
+- cobblemon:cyndaquil — Cyndaquil
+- cobblemon:dachsbun — Dachsbun
+- cobblemon:darmanitan — Darmanitan
+- cobblemon:dartrix — Dartrix
+- cobblemon:darumaka — Darumaka
+- cobblemon:decidueye — Decidueye
+- cobblemon:dedenne — Dedenne
+- cobblemon:deerling — Deerling
+- cobblemon:deino — Deino
+- cobblemon:delibird — Delibird
+- cobblemon:delphox — Delphox
+- cobblemon:dewgong — Dewgong
+- cobblemon:dewott — Dewott
+- cobblemon:dewpider — Dewpider
+- cobblemon:dhelmise — Dhelmise
+- cobblemon:diggersby — Diggersby
+- cobblemon:diglett — Diglett
+- cobblemon:ditto — Ditto
+- cobblemon:dodrio — Dodrio
+- cobblemon:doduo — Doduo
+- cobblemon:dolliv — Dolliv
+- cobblemon:dondozo — Dondozo
+- cobblemon:donphan — Donphan
+- cobblemon:doublade — Doublade
+- cobblemon:dracovish — Dracovish
+- cobblemon:dracozolt — Dracozolt
+- cobblemon:dragalge — Dragalge
+- cobblemon:dragapult — Dragapult
+- cobblemon:dragonair — Dragonair
+- cobblemon:dragonite — Dragonite
+- cobblemon:drakloak — Drakloak
+- cobblemon:drampa — Drampa
+- cobblemon:drapion — Drapion
+- cobblemon:dratini — Dratini
+- cobblemon:drednaw — Drednaw
+- cobblemon:dreepy — Dreepy
+- cobblemon:drifblim — Drifblim
+- cobblemon:drifloon — Drifloon
+- cobblemon:drilbur — Drilbur
+- cobblemon:drizzile — Drizzile
+- cobblemon:drowzee — Drowzee
+- cobblemon:druddigon — Druddigon
+- cobblemon:dubwool — Dubwool
+- cobblemon:ducklett — Ducklett
+- cobblemon:dudunsparce — Dudunsparce
+- cobblemon:dugtrio — Dugtrio
+- cobblemon:dunsparce — Dunsparce
+- cobblemon:duosion — Duosion
+- cobblemon:durant — Durant
+- cobblemon:dusclops — Dusclops
+- cobblemon:dusknoir — Dusknoir
+- cobblemon:duskull — Duskull
+- cobblemon:dwebble — Dwebble
+- cobblemon:eelektrik — Eelektrik
+- cobblemon:eelektross — Eelektross
+- cobblemon:eevee — Eevee
+- cobblemon:eiscue — Eiscue
+- cobblemon:ekans — Ekans
+- cobblemon:eldegoss — Eldegoss
+- cobblemon:electabuzz — Electabuzz
+- cobblemon:electivire — Electivire
+- cobblemon:electrike — Electrike
+- cobblemon:electrode — Electrode
+- cobblemon:elekid — Elekid
+- cobblemon:elgyem — Elgyem
+- cobblemon:emboar — Emboar
+- cobblemon:emolga — Emolga
+- cobblemon:empoleon — Empoleon
+- cobblemon:escavalier — Escavalier
+- cobblemon:espathra — Espathra
+- cobblemon:espeon — Espeon
+- cobblemon:espurr — Espurr
+- cobblemon:excadrill — Excadrill
+- cobblemon:exeggcute — Exeggcute
+- cobblemon:exeggutor — Exeggutor
+- cobblemon:exploud — Exploud
+- cobblemon:falinks — Falinks
+- cobblemon:farfetchd — Farfetch’d
+- cobblemon:farigiraf — Farigiraf
+- cobblemon:fearow — Fearow
+- cobblemon:feebas — Feebas
+- cobblemon:fennekin — Fennekin
+- cobblemon:feraligatr — Feraligatr
+- cobblemon:ferroseed — Ferroseed
+- cobblemon:ferrothorn — Ferrothorn
+- cobblemon:fidough — Fidough
+- cobblemon:finizen — Finizen
+- cobblemon:finneon — Finneon
+- cobblemon:flaaffy — Flaaffy
+- cobblemon:flabebe — Flabebe
+- cobblemon:flamigo — Flamigo
+- cobblemon:flareon — Flareon
+- cobblemon:fletchinder — Fletchinder
+- cobblemon:fletchling — Fletchling
+- cobblemon:flittle — Flittle
+- cobblemon:floatzel — Floatzel
+- cobblemon:floette — Floette
+- cobblemon:floragato — Floragato
+- cobblemon:florges — Florges
+- cobblemon:flygon — Flygon
+- cobblemon:fomantis — Fomantis
+- cobblemon:foongus — Foongus
+- cobblemon:forretress — Forretress
+- cobblemon:fraxure — Fraxure
+- cobblemon:frillish — Frillish
+- cobblemon:froakie — Froakie
+- cobblemon:frogadier — Frogadier
+- cobblemon:froslass — Froslass
+- cobblemon:fuecoco — Fuecoco
+- cobblemon:furfrou — Furfrou
+- cobblemon:furret — Furret
+- cobblemon:gabite — Gabite
+- cobblemon:gallade — Gallade
+- cobblemon:galvantula — Galvantula
+- cobblemon:garbodor — Garbodor
+- cobblemon:garchomp — Garchomp
+- cobblemon:gardevoir — Gardevoir
+- cobblemon:garganacl — Garganacl
+- cobblemon:gastly — Gastly
+- cobblemon:gastrodon — Gastrodon
+- cobblemon:gengar — Gengar
+- cobblemon:geodude — Geodude
+- cobblemon:gholdengo — Gholdengo
+- cobblemon:gible — Gible
+- cobblemon:gigalith — Gigalith
+- cobblemon:gimmighoul — Gimmighoul
+- cobblemon:girafarig — Girafarig
+- cobblemon:glaceon — Glaceon
+- cobblemon:glalie — Glalie
+- cobblemon:glameow — Glameow
+- cobblemon:gligar — Gligar
+- cobblemon:glimmet — Glimmet
+- cobblemon:glimmora — Glimmora
+- cobblemon:gliscor — Gliscor
+- cobblemon:gloom — Gloom
+- cobblemon:gogoat — Gogoat
+- cobblemon:golbat — Golbat
+- cobblemon:goldeen — Goldeen
+- cobblemon:golduck — Golduck
+- cobblemon:golem — Golem
+- cobblemon:golett — Golett
+- cobblemon:golisopod — Golisopod
+- cobblemon:golurk — Golurk
+- cobblemon:goodra — Goodra
+- cobblemon:goomy — Goomy
+- cobblemon:gorebyss — Gorebyss
+- cobblemon:gossifleur — Gossifleur
+- cobblemon:gothita — Gothita
+- cobblemon:gothitelle — Gothitelle
+- cobblemon:gothorita — Gothorita
+- cobblemon:gourgeist — Gourgeist
+- cobblemon:grafaiai — Grafaiai
+- cobblemon:granbull — Granbull
+- cobblemon:grapploct — Grapploct
+- cobblemon:graveler — Graveler
+- cobblemon:greedent — Greedent
+- cobblemon:greninja — Greninja
+- cobblemon:grimer — Grimer
+- cobblemon:grimmsnarl — Grimmsnarl
+- cobblemon:grookey — Grookey
+- cobblemon:grotle — Grotle
+- cobblemon:grovyle — Grovyle
+- cobblemon:growlithe — Growlithe
+- cobblemon:grumpig — Grumpig
+- cobblemon:gumshoos — Gumshoos
+- cobblemon:gurdurr — Gurdurr
+- cobblemon:gyarados — Gyarados
+- cobblemon:hakamoo — Hakamo-o
+- cobblemon:happiny — Happiny
+- cobblemon:hariyama — Hariyama
+- cobblemon:hatenna — Hatenna
+- cobblemon:hatterene — Hatterene
+- cobblemon:hattrem — Hattrem
+- cobblemon:haunter — Haunter
+- cobblemon:hawlucha — Hawlucha
+- cobblemon:haxorus — Haxorus
+- cobblemon:heatmor — Heatmor
+- cobblemon:heracross — Heracross
+- cobblemon:herdier — Herdier
+- cobblemon:hippopotas — Hippopotas
+- cobblemon:hippowdon — Hippowdon
+- cobblemon:hitmonchan — Hitmonchan
+- cobblemon:hitmonlee — Hitmonlee
+- cobblemon:hitmontop — Hitmontop
+- cobblemon:honchkrow — Honchkrow
+- cobblemon:honedge — Honedge
+- cobblemon:hooh — Ho-Oh
+- cobblemon:hoothoot — Hoothoot
+- cobblemon:hoppip — Hoppip
+- cobblemon:horsea — Horsea
+- cobblemon:houndoom — Houndoom
+- cobblemon:houndour — Houndour
+- cobblemon:huntail — Huntail
+- cobblemon:hydreigon — Hydreigon
+- cobblemon:hypno — Hypno
+- cobblemon:igglybuff — Igglybuff
+- cobblemon:illumise — Illumise
+- cobblemon:impidimp — Impidimp
+- cobblemon:incineroar — Incineroar
+- cobblemon:infernape — Infernape
+- cobblemon:inkay — Inkay
+- cobblemon:inteleon — Inteleon
+- cobblemon:ironleaves — Iron Leaves
+- cobblemon:ivysaur — Ivysaur
+- cobblemon:jangmoo — Jangmo-o
+- cobblemon:jellicent — Jellicent
+- cobblemon:jigglypuff — Jigglypuff
+- cobblemon:jolteon — Jolteon
+- cobblemon:joltik — Joltik
+- cobblemon:jumpluff — Jumpluff
+- cobblemon:jynx — Jynx
+- cobblemon:kabuto — Kabuto
+- cobblemon:kabutops — Kabutops
+- cobblemon:kadabra — Kadabra
+- cobblemon:kakuna — Kakuna
+- cobblemon:kangaskhan — Kangaskhan
+- cobblemon:karrablast — Karrablast
+- cobblemon:kecleon — Kecleon
+- cobblemon:kilowattrel — Kilowattrel
+- cobblemon:kingdra — Kingdra
+- cobblemon:kingler — Kingler
+- cobblemon:kirlia — Kirlia
+- cobblemon:klang — Klang
+- cobblemon:klawf — Klawf
+- cobblemon:kleavor — Kleavor
+- cobblemon:klefki — Klefki
+- cobblemon:klink — Klink
+- cobblemon:klinklang — Klinklang
+- cobblemon:koffing — Koffing
+- cobblemon:komala — Komala
+- cobblemon:kommoo — Kommo-o
+- cobblemon:krabby — Krabby
+- cobblemon:kricketot — Kricketot
+- cobblemon:kricketune — Kricketune
+- cobblemon:krokorok — Krokorok
+- cobblemon:krookodile — Krookodile
+- cobblemon:lairon — Lairon
+- cobblemon:lampent — Lampent
+- cobblemon:lanturn — Lanturn
+- cobblemon:lapras — Lapras
+- cobblemon:larvesta — Larvesta
+- cobblemon:larvitar — Larvitar
+- cobblemon:latias — Latias
+- cobblemon:latios — Latios
+- cobblemon:leafeon — Leafeon
+- cobblemon:leavanny — Leavanny
+- cobblemon:lechonk — Lechonk
+- cobblemon:ledian — Ledian
+- cobblemon:ledyba — Ledyba
+- cobblemon:lickilicky — Lickilicky
+- cobblemon:lickitung — Lickitung
+- cobblemon:liepard — Liepard
+- cobblemon:lileep — Lileep
+- cobblemon:lilligant — Lilligant
+- cobblemon:lillipup — Lillipup
+- cobblemon:linoone — Linoone
+- cobblemon:litleo — Litleo
+- cobblemon:litten — Litten
+- cobblemon:litwick — Litwick
+- cobblemon:lombre — Lombre
+- cobblemon:lopunny — Lopunny
+- cobblemon:lotad — Lotad
+- cobblemon:loudred — Loudred
+- cobblemon:lucario — Lucario
+- cobblemon:ludicolo — Ludicolo
+- cobblemon:lugia — Lugia
+- cobblemon:lumineon — Lumineon
+- cobblemon:lunatone — Lunatone
+- cobblemon:lurantis — Lurantis
+- cobblemon:luvdisc — Luvdisc
+- cobblemon:luxio — Luxio
+- cobblemon:luxray — Luxray
+- cobblemon:mabosstiff — Mabosstiff
+- cobblemon:machamp — Machamp
+- cobblemon:machoke — Machoke
+- cobblemon:machop — Machop
+- cobblemon:magby — Magby
+- cobblemon:magcargo — Magcargo
+- cobblemon:magikarp — Magikarp
+- cobblemon:magmar — Magmar
+- cobblemon:magmortar — Magmortar
+- cobblemon:magnemite — Magnemite
+- cobblemon:magneton — Magneton
+- cobblemon:magnezone — Magnezone
+- cobblemon:makuhita — Makuhita
+- cobblemon:malamar — Malamar
+- cobblemon:mamoswine — Mamoswine
+- cobblemon:manectric — Manectric
+- cobblemon:mankey — Mankey
+- cobblemon:mantine — Mantine
+- cobblemon:mantyke — Mantyke
+- cobblemon:maractus — Maractus
+- cobblemon:mareanie — Mareanie
+- cobblemon:mareep — Mareep
+- cobblemon:marill — Marill
+- cobblemon:marowak — Marowak
+- cobblemon:marshtomp — Marshtomp
+- cobblemon:maschiff — Maschiff
+- cobblemon:masquerain — Masquerain
+- cobblemon:maushold — Maushold
+- cobblemon:mawile — Mawile
+- cobblemon:medicham — Medicham
+- cobblemon:meditite — Meditite
+- cobblemon:meganium — Meganium
+- cobblemon:meowscarada — Meowscarada
+- cobblemon:meowstic — Meowstic
+- cobblemon:meowth — Meowth
+- cobblemon:metagross — Metagross
+- cobblemon:metang — Metang
+- cobblemon:metapod — Metapod
+- cobblemon:mew — Mew
+- cobblemon:mewtwo — Mewtwo
+- cobblemon:mienfoo — Mienfoo
+- cobblemon:mienshao — Mienshao
+- cobblemon:mightyena — Mightyena
+- cobblemon:milcery — Milcery
+- cobblemon:milotic — Milotic
+- cobblemon:miltank — Miltank
+- cobblemon:mimejr — Mime Jr.
+- cobblemon:mimikyu — Mimikyu
+- cobblemon:minccino — Minccino
+- cobblemon:minun — Minun
+- cobblemon:misdreavus — Misdreavus
+- cobblemon:mismagius — Mismagius
+- cobblemon:moltres — Moltres
+- cobblemon:monferno — Monferno
+- cobblemon:morelull — Morelull
+- cobblemon:morgrem — Morgrem
+- cobblemon:morpeko — Morpeko
+- cobblemon:mrmime — Mr. Mime
+- cobblemon:mrrime — Mr. Rime
+- cobblemon:mudbray — Mudbray
+- cobblemon:mudkip — Mudkip
+- cobblemon:mudsdale — Mudsdale
+- cobblemon:muk — Muk
+- cobblemon:munchlax — Munchlax
+- cobblemon:munna — Munna
+- cobblemon:murkrow — Murkrow
+- cobblemon:musharna — Musharna
+- cobblemon:nacli — Nacli
+- cobblemon:naclstack — Naclstack
+- cobblemon:naganadel — Naganadel
+- cobblemon:natu — Natu
+- cobblemon:nickit — Nickit
+- cobblemon:nidoking — Nidoking
+- cobblemon:nidoqueen — Nidoqueen
+- cobblemon:nidoranf — Nidoran-F
+- cobblemon:nidoranm — Nidoran-M
+- cobblemon:nidorina — Nidorina
+- cobblemon:nidorino — Nidorino
+- cobblemon:nincada — Nincada
+- cobblemon:ninetales — Ninetales
+- cobblemon:ninjask — Ninjask
+- cobblemon:noctowl — Noctowl
+- cobblemon:noibat — Noibat
+- cobblemon:noivern — Noivern
+- cobblemon:nosepass — Nosepass
+- cobblemon:numel — Numel
+- cobblemon:nuzleaf — Nuzleaf
+- cobblemon:obstagoon — Obstagoon
+- cobblemon:octillery — Octillery
+- cobblemon:oddish — Oddish
+- cobblemon:oinkologne — Oinkologne
+- cobblemon:omanyte — Omanyte
+- cobblemon:omastar — Omastar
+- cobblemon:onix — Onix
+- cobblemon:orthworm — Orthworm
+- cobblemon:oshawott — Oshawott
+- cobblemon:overqwil — Overqwil
+- cobblemon:pachirisu — Pachirisu
+- cobblemon:palafin — Palafin
+- cobblemon:palossand — Palossand
+- cobblemon:panpour — Panpour
+- cobblemon:pansage — Pansage
+- cobblemon:pansear — Pansear
+- cobblemon:paras — Paras
+- cobblemon:parasect — Parasect
+- cobblemon:patrat — Patrat
+- cobblemon:pelipper — Pelipper
+- cobblemon:perrserker — Perrserker
+- cobblemon:persian — Persian
+- cobblemon:petilil — Petilil
+- cobblemon:phanpy — Phanpy
+- cobblemon:phantump — Phantump
+- cobblemon:pichu — Pichu
+- cobblemon:pidgeot — Pidgeot
+- cobblemon:pidgeotto — Pidgeotto
+- cobblemon:pidgey — Pidgey
+- cobblemon:pidove — Pidove
+- cobblemon:pignite — Pignite
+- cobblemon:pikachu — Pikachu
+- cobblemon:pikipek — Pikipek
+- cobblemon:piloswine — Piloswine
+- cobblemon:pincurchin — Pincurchin
+- cobblemon:pineco — Pineco
+- cobblemon:pinsir — Pinsir
+- cobblemon:piplup — Piplup
+- cobblemon:plusle — Plusle
+- cobblemon:poipole — Poipole
+- cobblemon:politoed — Politoed
+- cobblemon:poliwag — Poliwag
+- cobblemon:poliwhirl — Poliwhirl
+- cobblemon:poliwrath — Poliwrath
+- cobblemon:poltchageist — Poltchageist
+- cobblemon:polteageist — Polteageist
+- cobblemon:ponyta — Ponyta
+- cobblemon:poochyena — Poochyena
+- cobblemon:popplio — Popplio
+- cobblemon:porygon — Porygon
+- cobblemon:porygon2 — Porygon2
+- cobblemon:porygonz — Porygon-Z
+- cobblemon:primarina — Primarina
+- cobblemon:primeape — Primeape
+- cobblemon:prinplup — Prinplup
+- cobblemon:probopass — Probopass
+- cobblemon:psyduck — Psyduck
+- cobblemon:pumpkaboo — Pumpkaboo
+- cobblemon:pupitar — Pupitar
+- cobblemon:purrloin — Purrloin
+- cobblemon:purugly — Purugly
+- cobblemon:pyroar — Pyroar
+- cobblemon:pyukumuku — Pyukumuku
+- cobblemon:quagsire — Quagsire
+- cobblemon:quaquaval — Quaquaval
+- cobblemon:quaxly — Quaxly
+- cobblemon:quaxwell — Quaxwell
+- cobblemon:quilava — Quilava
+- cobblemon:quilladin — Quilladin
+- cobblemon:qwilfish — Qwilfish
+- cobblemon:raboot — Raboot
+- cobblemon:rabsca — Rabsca
+- cobblemon:raichu — Raichu
+- cobblemon:ralts — Ralts
+- cobblemon:rampardos — Rampardos
+- cobblemon:rapidash — Rapidash
+- cobblemon:raticate — Raticate
+- cobblemon:rattata — Rattata
+- cobblemon:rayquaza — Rayquaza
+- cobblemon:regice — Regice
+- cobblemon:regidrago — Regidrago
+- cobblemon:regieleki — Regieleki
+- cobblemon:regigigas — Regigigas
+- cobblemon:regirock — Regirock
+- cobblemon:registeel — Registeel
+- cobblemon:relicanth — Relicanth
+- cobblemon:rellor — Rellor
+- cobblemon:remoraid — Remoraid
+- cobblemon:reuniclus — Reuniclus
+- cobblemon:revavroom — Revavroom
+- cobblemon:rhydon — Rhydon
+- cobblemon:rhyhorn — Rhyhorn
+- cobblemon:rhyperior — Rhyperior
+- cobblemon:ribombee — Ribombee
+- cobblemon:rillaboom — Rillaboom
+- cobblemon:riolu — Riolu
+- cobblemon:roggenrola — Roggenrola
+- cobblemon:rookidee — Rookidee
+- cobblemon:roselia — Roselia
+- cobblemon:roserade — Roserade
+- cobblemon:rotom — Rotom
+- cobblemon:rowlet — Rowlet
+- cobblemon:rufflet — Rufflet
+- cobblemon:sableye — Sableye
+- cobblemon:salamence — Salamence
+- cobblemon:salandit — Salandit
+- cobblemon:salazzle — Salazzle
+- cobblemon:samurott — Samurott
+- cobblemon:sandaconda — Sandaconda
+- cobblemon:sandile — Sandile
+- cobblemon:sandshrew — Sandshrew
+- cobblemon:sandslash — Sandslash
+- cobblemon:sandygast — Sandygast
+- cobblemon:sawk — Sawk
+- cobblemon:sawsbuck — Sawsbuck
+- cobblemon:scatterbug — Scatterbug
+- cobblemon:sceptile — Sceptile
+- cobblemon:scizor — Scizor
+- cobblemon:scolipede — Scolipede
+- cobblemon:scorbunny — Scorbunny
+- cobblemon:scovillain — Scovillain
+- cobblemon:scrafty — Scrafty
+- cobblemon:scraggy — Scraggy
+- cobblemon:scyther — Scyther
+- cobblemon:seadra — Seadra
+- cobblemon:seaking — Seaking
+- cobblemon:sealeo — Sealeo
+- cobblemon:seedot — Seedot
+- cobblemon:seel — Seel
+- cobblemon:sentret — Sentret
+- cobblemon:serperior — Serperior
+- cobblemon:servine — Servine
+- cobblemon:sewaddle — Sewaddle
+- cobblemon:sharpedo — Sharpedo
+- cobblemon:shedinja — Shedinja
+- cobblemon:shelgon — Shelgon
+- cobblemon:shellder — Shellder
+- cobblemon:shellos — Shellos
+- cobblemon:shelmet — Shelmet
+- cobblemon:shieldon — Shieldon
+- cobblemon:shiftry — Shiftry
+- cobblemon:shiinotic — Shiinotic
+- cobblemon:shinx — Shinx
+- cobblemon:shroodle — Shroodle
+- cobblemon:shroomish — Shroomish
+- cobblemon:shuckle — Shuckle
+- cobblemon:shuppet — Shuppet
+- cobblemon:sigilyph — Sigilyph
+- cobblemon:silicobra — Silicobra
+- cobblemon:simipour — Simipour
+- cobblemon:simisage — Simisage
+- cobblemon:simisear — Simisear
+- cobblemon:sinistcha — Sinistcha
+- cobblemon:sinistea — Sinistea
+- cobblemon:sirfetchd — Sirfetch’d
+- cobblemon:sizzlipede — Sizzlipede
+- cobblemon:skarmory — Skarmory
+- cobblemon:skeledirge — Skeledirge
+- cobblemon:skiddo — Skiddo
+- cobblemon:skiploom — Skiploom
+- cobblemon:skorupi — Skorupi
+- cobblemon:skrelp — Skrelp
+- cobblemon:skwovet — Skwovet
+- cobblemon:slaking — Slaking
+- cobblemon:slakoth — Slakoth
+- cobblemon:sliggoo — Sliggoo
+- cobblemon:slowbro — Slowbro
+- cobblemon:slowking — Slowking
+- cobblemon:slowpoke — Slowpoke
+- cobblemon:slugma — Slugma
+- cobblemon:slurpuff — Slurpuff
+- cobblemon:smeargle — Smeargle
+- cobblemon:smoliv — Smoliv
+- cobblemon:smoochum — Smoochum
+- cobblemon:sneasel — Sneasel
+- cobblemon:sneasler — Sneasler
+- cobblemon:snivy — Snivy
+- cobblemon:snorlax — Snorlax
+- cobblemon:snorunt — Snorunt
+- cobblemon:snubbull — Snubbull
+- cobblemon:sobble — Sobble
+- cobblemon:solosis — Solosis
+- cobblemon:solrock — Solrock
+- cobblemon:spearow — Spearow
+- cobblemon:spewpa — Spewpa
+- cobblemon:spheal — Spheal
+- cobblemon:spidops — Spidops
+- cobblemon:spinarak — Spinarak
+- cobblemon:spinda — Spinda
+- cobblemon:spiritomb — Spiritomb
+- cobblemon:spoink — Spoink
+- cobblemon:sprigatito — Sprigatito
+- cobblemon:spritzee — Spritzee
+- cobblemon:squawkabilly — Squawkabilly
+- cobblemon:squirtle — Squirtle
+- cobblemon:stantler — Stantler
+- cobblemon:staraptor — Staraptor
+- cobblemon:staravia — Staravia
+- cobblemon:starly — Starly
+- cobblemon:starmie — Starmie
+- cobblemon:staryu — Staryu
+- cobblemon:steelix — Steelix
+- cobblemon:steenee — Steenee
+- cobblemon:stonjourner — Stonjourner
+- cobblemon:stoutland — Stoutland
+- cobblemon:stufful — Stufful
+- cobblemon:stunfisk — Stunfisk
+- cobblemon:sudowoodo — Sudowoodo
+- cobblemon:sunflora — Sunflora
+- cobblemon:sunkern — Sunkern
+- cobblemon:surskit — Surskit
+- cobblemon:swablu — Swablu
+- cobblemon:swadloon — Swadloon
+- cobblemon:swampert — Swampert
+- cobblemon:swanna — Swanna
+- cobblemon:swellow — Swellow
+- cobblemon:swinub — Swinub
+- cobblemon:swirlix — Swirlix
+- cobblemon:swoobat — Swoobat
+- cobblemon:sylveon — Sylveon
+- cobblemon:tadbulb — Tadbulb
+- cobblemon:taillow — Taillow
+- cobblemon:talonflame — Talonflame
+- cobblemon:tandemaus — Tandemaus
+- cobblemon:tangela — Tangela
+- cobblemon:tangrowth — Tangrowth
+- cobblemon:tarountula — Tarountula
+- cobblemon:tatsugiri — Tatsugiri
+- cobblemon:tauros — Tauros
+- cobblemon:teddiursa — Teddiursa
+- cobblemon:tentacool — Tentacool
+- cobblemon:tentacruel — Tentacruel
+- cobblemon:tepig — Tepig
+- cobblemon:thievul — Thievul
+- cobblemon:throh — Throh
+- cobblemon:thwackey — Thwackey
+- cobblemon:timburr — Timburr
+- cobblemon:tinkatink — Tinkatink
+- cobblemon:tinkaton — Tinkaton
+- cobblemon:tinkatuff — Tinkatuff
+- cobblemon:tirtouga — Tirtouga
+- cobblemon:toedscool — Toedscool
+- cobblemon:toedscruel — Toedscruel
+- cobblemon:togedemaru — Togedemaru
+- cobblemon:togekiss — Togekiss
+- cobblemon:togepi — Togepi
+- cobblemon:togetic — Togetic
+- cobblemon:torchic — Torchic
+- cobblemon:torkoal — Torkoal
+- cobblemon:torracat — Torracat
+- cobblemon:torterra — Torterra
+- cobblemon:totodile — Totodile
+- cobblemon:toucannon — Toucannon
+- cobblemon:toxapex — Toxapex
+- cobblemon:toxel — Toxel
+- cobblemon:toxicroak — Toxicroak
+- cobblemon:toxtricity — Toxtricity
+- cobblemon:tranquill — Tranquill
+- cobblemon:trapinch — Trapinch
+- cobblemon:treecko — Treecko
+- cobblemon:trevenant — Trevenant
+- cobblemon:tropius — Tropius
+- cobblemon:trubbish — Trubbish
+- cobblemon:trumbeak — Trumbeak
+- cobblemon:tsareena — Tsareena
+- cobblemon:turtonator — Turtonator
+- cobblemon:turtwig — Turtwig
+- cobblemon:tynamo — Tynamo
+- cobblemon:typhlosion — Typhlosion
+- cobblemon:tyranitar — Tyranitar
+- cobblemon:tyrantrum — Tyrantrum
+- cobblemon:tyrogue — Tyrogue
+- cobblemon:tyrunt — Tyrunt
+- cobblemon:umbreon — Umbreon
+- cobblemon:unfezant — Unfezant
+- cobblemon:unown — Unown
+- cobblemon:ursaluna — Ursaluna
+- cobblemon:ursaring — Ursaring
+- cobblemon:vanillish — Vanillish
+- cobblemon:vanillite — Vanillite
+- cobblemon:vanilluxe — Vanilluxe
+- cobblemon:vaporeon — Vaporeon
+- cobblemon:varoom — Varoom
+- cobblemon:veluza — Veluza
+- cobblemon:venipede — Venipede
+- cobblemon:venomoth — Venomoth
+- cobblemon:venonat — Venonat
+- cobblemon:venusaur — Venusaur
+- cobblemon:vespiquen — Vespiquen
+- cobblemon:vibrava — Vibrava
+- cobblemon:victreebel — Victreebel
+- cobblemon:vigoroth — Vigoroth
+- cobblemon:vileplume — Vileplume
+- cobblemon:vivillon — Vivillon
+- cobblemon:volbeat — Volbeat
+- cobblemon:volcarona — Volcarona
+- cobblemon:voltorb — Voltorb
+- cobblemon:vulpix — Vulpix
+- cobblemon:wailmer — Wailmer
+- cobblemon:wailord — Wailord
+- cobblemon:walkingwake — Walking Wake
+- cobblemon:walrein — Walrein
+- cobblemon:wartortle — Wartortle
+- cobblemon:watchog — Watchog
+- cobblemon:wattrel — Wattrel
+- cobblemon:weavile — Weavile
+- cobblemon:weedle — Weedle
+- cobblemon:weepinbell — Weepinbell
+- cobblemon:weezing — Weezing
+- cobblemon:whimsicott — Whimsicott
+- cobblemon:whirlipede — Whirlipede
+- cobblemon:whiscash — Whiscash
+- cobblemon:whismur — Whismur
+- cobblemon:wigglytuff — Wigglytuff
+- cobblemon:wiglett — Wiglett
+- cobblemon:wimpod — Wimpod
+- cobblemon:wingull — Wingull
+- cobblemon:wishiwashi — Wishiwashi
+- cobblemon:wobbuffet — Wobbuffet
+- cobblemon:woobat — Woobat
+- cobblemon:wooloo — Wooloo
+- cobblemon:wooper — Wooper
+- cobblemon:wugtrio — Wugtrio
+- cobblemon:wynaut — Wynaut
+- cobblemon:wyrdeer — Wyrdeer
+- cobblemon:xatu — Xatu
+- cobblemon:xerneas — Xerneas
+- cobblemon:yamask — Yamask
+- cobblemon:yamper — Yamper
+- cobblemon:yanma — Yanma
+- cobblemon:yanmega — Yanmega
+- cobblemon:yungoos — Yungoos
+- cobblemon:zapdos — Zapdos
+- cobblemon:zarude — Zarude
+- cobblemon:zebstrika — Zebstrika
+- cobblemon:zigzagoon — Zigzagoon
+- cobblemon:zoroark — Zoroark
+- cobblemon:zorua — Zorua
+- cobblemon:zubat — Zubat
+- cobblemon:zweilous — Zweilous
+
+### Registros não implementados no Cobblemon base (habilitáveis por addons)
+
+Estes registros existem no catálogo de dados, mas estão marcados como não implementados no Cobblemon 1.7.3 base. O site deve exibi-los como opcionais e permitir habilitá-los quando um addon fornecer a implementação real, incluindo formas, habilidades, golpes e dados de batalha.
+
++- cobblemon:abomasnow — Abomasnow — status: não implementado no Cobblemon base
+- cobblemon:appletun — Appletun — status: não implementado no Cobblemon base
+- cobblemon:applin — Applin — status: não implementado no Cobblemon base
+- cobblemon:arceus — Arceus — status: não implementado no Cobblemon base
+- cobblemon:archaludon — Archaludon — status: não implementado no Cobblemon base
+- cobblemon:arctibax — Arctibax — status: não implementado no Cobblemon base
+- cobblemon:audino — Audino — status: não implementado no Cobblemon base
+- cobblemon:azelf — Azelf — status: não implementado no Cobblemon base
+- cobblemon:baxcalibur — Baxcalibur — status: não implementado no Cobblemon base
+- cobblemon:beautifly — Beautifly — status: não implementado no Cobblemon base
+- cobblemon:bisharp — Bisharp — status: não implementado no Cobblemon base
+- cobblemon:blacephalon — Blacephalon — status: não implementado no Cobblemon base
+- cobblemon:blipbug — Blipbug — status: não implementado no Cobblemon base
+- cobblemon:bombirdier — Bombirdier — status: não implementado no Cobblemon base
+- cobblemon:brutebonnet — Brute Bonnet — status: não implementado no Cobblemon base
+- cobblemon:burmy — Burmy — status: não implementado no Cobblemon base
+- cobblemon:buzzwole — Buzzwole — status: não implementado no Cobblemon base
+- cobblemon:calyrex — Calyrex — status: não implementado no Cobblemon base
+- cobblemon:carkol — Carkol — status: não implementado no Cobblemon base
+- cobblemon:cascoon — Cascoon — status: não implementado no Cobblemon base
+- cobblemon:castform — Castform — status: não implementado no Cobblemon base
+- cobblemon:celebi — Celebi — status: não implementado no Cobblemon base
+- cobblemon:celesteela — Celesteela — status: não implementado no Cobblemon base
+- cobblemon:charjabug — Charjabug — status: não implementado no Cobblemon base
+- cobblemon:cherrim — Cherrim — status: não implementado no Cobblemon base
+- cobblemon:cherubi — Cherubi — status: não implementado no Cobblemon base
+- cobblemon:chienpao — Chien-Pao — status: não implementado no Cobblemon base
+- cobblemon:chiyu — Chi-Yu — status: não implementado no Cobblemon base
+- cobblemon:coalossal — Coalossal — status: não implementado no Cobblemon base
+- cobblemon:cobalion — Cobalion — status: não implementado no Cobblemon base
+- cobblemon:cosmoem — Cosmoem — status: não implementado no Cobblemon base
+- cobblemon:cosmog — Cosmog — status: não implementado no Cobblemon base
+- cobblemon:cresselia — Cresselia — status: não implementado no Cobblemon base
+- cobblemon:darkrai — Darkrai — status: não implementado no Cobblemon base
+- cobblemon:delcatty — Delcatty — status: não implementado no Cobblemon base
+- cobblemon:deoxys — Deoxys — status: não implementado no Cobblemon base
+- cobblemon:dialga — Dialga — status: não implementado no Cobblemon base
+- cobblemon:diancie — Diancie — status: não implementado no Cobblemon base
+- cobblemon:dipplin — Dipplin — status: não implementado no Cobblemon base
+- cobblemon:dottler — Dottler — status: não implementado no Cobblemon base
+- cobblemon:duraludon — Duraludon — status: não implementado no Cobblemon base
+- cobblemon:dustox — Dustox — status: não implementado no Cobblemon base
+- cobblemon:enamorus — Enamorus — status: não implementado no Cobblemon base
+- cobblemon:entei — Entei — status: não implementado no Cobblemon base
+- cobblemon:eternatus — Eternatus — status: não implementado no Cobblemon base
+- cobblemon:fezandipiti — Fezandipiti — status: não implementado no Cobblemon base
+- cobblemon:flapple — Flapple — status: não implementado no Cobblemon base
+- cobblemon:fluttermane — Flutter Mane — status: não implementado no Cobblemon base
+- cobblemon:frigibax — Frigibax — status: não implementado no Cobblemon base
+- cobblemon:frosmoth — Frosmoth — status: não implementado no Cobblemon base
+- cobblemon:genesect — Genesect — status: não implementado no Cobblemon base
+- cobblemon:giratina — Giratina — status: não implementado no Cobblemon base
+- cobblemon:glastrier — Glastrier — status: não implementado no Cobblemon base
+- cobblemon:gougingfire — Gouging Fire — status: não implementado no Cobblemon base
+- cobblemon:greattusk — Great Tusk — status: não implementado no Cobblemon base
+- cobblemon:greavard — Greavard — status: não implementado no Cobblemon base
+- cobblemon:groudon — Groudon — status: não implementado no Cobblemon base
+- cobblemon:grubbin — Grubbin — status: não implementado no Cobblemon base
+- cobblemon:gulpin — Gulpin — status: não implementado no Cobblemon base
+- cobblemon:guzzlord — Guzzlord — status: não implementado no Cobblemon base
+- cobblemon:heatran — Heatran — status: não implementado no Cobblemon base
+- cobblemon:heliolisk — Heliolisk — status: não implementado no Cobblemon base
+- cobblemon:helioptile — Helioptile — status: não implementado no Cobblemon base
+- cobblemon:hoopa — Hoopa — status: não implementado no Cobblemon base
+- cobblemon:houndstone — Houndstone — status: não implementado no Cobblemon base
+- cobblemon:hydrapple — Hydrapple — status: não implementado no Cobblemon base
+- cobblemon:indeedee — Indeedee — status: não implementado no Cobblemon base
+- cobblemon:ironboulder — Iron Boulder — status: não implementado no Cobblemon base
+- cobblemon:ironbundle — Iron Bundle — status: não implementado no Cobblemon base
+- cobblemon:ironcrown — Iron Crown — status: não implementado no Cobblemon base
+- cobblemon:ironhands — Iron Hands — status: não implementado no Cobblemon base
+- cobblemon:ironjugulis — Iron Jugulis — status: não implementado no Cobblemon base
+- cobblemon:ironmoth — Iron Moth — status: não implementado no Cobblemon base
+- cobblemon:ironthorns — Iron Thorns — status: não implementado no Cobblemon base
+- cobblemon:irontreads — Iron Treads — status: não implementado no Cobblemon base
+- cobblemon:ironvaliant — Iron Valiant — status: não implementado no Cobblemon base
+- cobblemon:jirachi — Jirachi — status: não implementado no Cobblemon base
+- cobblemon:kartana — Kartana — status: não implementado no Cobblemon base
+- cobblemon:keldeo — Keldeo — status: não implementado no Cobblemon base
+- cobblemon:kingambit — Kingambit — status: não implementado no Cobblemon base
+- cobblemon:koraidon — Koraidon — status: não implementado no Cobblemon base
+- cobblemon:kubfu — Kubfu — status: não implementado no Cobblemon base
+- cobblemon:kyogre — Kyogre — status: não implementado no Cobblemon base
+- cobblemon:kyurem — Kyurem — status: não implementado no Cobblemon base
+- cobblemon:landorus — Landorus — status: não implementado no Cobblemon base
+- cobblemon:lokix — Lokix — status: não implementado no Cobblemon base
+- cobblemon:lunala — Lunala — status: não implementado no Cobblemon base
+- cobblemon:lycanroc — Lycanroc — status: não implementado no Cobblemon base
+- cobblemon:magearna — Magearna — status: não implementado no Cobblemon base
+- cobblemon:manaphy — Manaphy — status: não implementado no Cobblemon base
+- cobblemon:mandibuzz — Mandibuzz — status: não implementado no Cobblemon base
+- cobblemon:marshadow — Marshadow — status: não implementado no Cobblemon base
+- cobblemon:melmetal — Melmetal — status: não implementado no Cobblemon base
+- cobblemon:meloetta — Meloetta — status: não implementado no Cobblemon base
+- cobblemon:meltan — Meltan — status: não implementado no Cobblemon base
+- cobblemon:mesprit — Mesprit — status: não implementado no Cobblemon base
+- cobblemon:minior — Minior — status: não implementado no Cobblemon base
+- cobblemon:miraidon — Miraidon — status: não implementado no Cobblemon base
+- cobblemon:mothim — Mothim — status: não implementado no Cobblemon base
+- cobblemon:munkidori — Munkidori — status: não implementado no Cobblemon base
+- cobblemon:necrozma — Necrozma — status: não implementado no Cobblemon base
+- cobblemon:nihilego — Nihilego — status: não implementado no Cobblemon base
+- cobblemon:nymble — Nymble — status: não implementado no Cobblemon base
+- cobblemon:ogerpon — Ogerpon — status: não implementado no Cobblemon base
+- cobblemon:okidogi — Okidogi — status: não implementado no Cobblemon base
+- cobblemon:oranguru — Oranguru — status: não implementado no Cobblemon base
+- cobblemon:orbeetle — Orbeetle — status: não implementado no Cobblemon base
+- cobblemon:oricorio — Oricorio — status: não implementado no Cobblemon base
+- cobblemon:palkia — Palkia — status: não implementado no Cobblemon base
+- cobblemon:palpitoad — Palpitoad — status: não implementado no Cobblemon base
+- cobblemon:pancham — Pancham — status: não implementado no Cobblemon base
+- cobblemon:pangoro — Pangoro — status: não implementado no Cobblemon base
+- cobblemon:passimian — Passimian — status: não implementado no Cobblemon base
+- cobblemon:pawmi — Pawmi — status: não implementado no Cobblemon base
+- cobblemon:pawmo — Pawmo — status: não implementado no Cobblemon base
+- cobblemon:pawmot — Pawmot — status: não implementado no Cobblemon base
+- cobblemon:pawniard — Pawniard — status: não implementado no Cobblemon base
+- cobblemon:pecharunt — Pecharunt — status: não implementado no Cobblemon base
+- cobblemon:pheromosa — Pheromosa — status: não implementado no Cobblemon base
+- cobblemon:phione — Phione — status: não implementado no Cobblemon base
+- cobblemon:ragingbolt — Raging Bolt — status: não implementado no Cobblemon base
+- cobblemon:raikou — Raikou — status: não implementado no Cobblemon base
+- cobblemon:reshiram — Reshiram — status: não implementado no Cobblemon base
+- cobblemon:roaringmoon — Roaring Moon — status: não implementado no Cobblemon base
+- cobblemon:rockruff — Rockruff — status: não implementado no Cobblemon base
+- cobblemon:rolycoly — Rolycoly — status: não implementado no Cobblemon base
+- cobblemon:runerigus — Runerigus — status: não implementado no Cobblemon base
+- cobblemon:sandyshocks — Sandy Shocks — status: não implementado no Cobblemon base
+- cobblemon:screamtail — Scream Tail — status: não implementado no Cobblemon base
+- cobblemon:seismitoad — Seismitoad — status: não implementado no Cobblemon base
+- cobblemon:seviper — Seviper — status: não implementado no Cobblemon base
+- cobblemon:shaymin — Shaymin — status: não implementado no Cobblemon base
+- cobblemon:silcoon — Silcoon — status: não implementado no Cobblemon base
+- cobblemon:silvally — Silvally — status: não implementado no Cobblemon base
+- cobblemon:skitty — Skitty — status: não implementado no Cobblemon base
+- cobblemon:skuntank — Skuntank — status: não implementado no Cobblemon base
+- cobblemon:slitherwing — Slither Wing — status: não implementado no Cobblemon base
+- cobblemon:snom — Snom — status: não implementado no Cobblemon base
+- cobblemon:snover — Snover — status: não implementado no Cobblemon base
+- cobblemon:solgaleo — Solgaleo — status: não implementado no Cobblemon base
+- cobblemon:spectrier — Spectrier — status: não implementado no Cobblemon base
+- cobblemon:stakataka — Stakataka — status: não implementado no Cobblemon base
+- cobblemon:stunky — Stunky — status: não implementado no Cobblemon base
+- cobblemon:suicune — Suicune — status: não implementado no Cobblemon base
+- cobblemon:swalot — Swalot — status: não implementado no Cobblemon base
+- cobblemon:tapubulu — Tapu Bulu — status: não implementado no Cobblemon base
+- cobblemon:tapufini — Tapu Fini — status: não implementado no Cobblemon base
+- cobblemon:tapukoko — Tapu Koko — status: não implementado no Cobblemon base
+- cobblemon:tapulele — Tapu Lele — status: não implementado no Cobblemon base
+- cobblemon:terapagos — Terapagos — status: não implementado no Cobblemon base
+- cobblemon:terrakion — Terrakion — status: não implementado no Cobblemon base
+- cobblemon:thundurus — Thundurus — status: não implementado no Cobblemon base
+- cobblemon:tinglu — Ting-Lu — status: não implementado no Cobblemon base
+- cobblemon:tornadus — Tornadus — status: não implementado no Cobblemon base
+- cobblemon:tympole — Tympole — status: não implementado no Cobblemon base
+- cobblemon:typenull — Type: Null — status: não implementado no Cobblemon base
+- cobblemon:urshifu — Urshifu — status: não implementado no Cobblemon base
+- cobblemon:uxie — Uxie — status: não implementado no Cobblemon base
+- cobblemon:victini — Victini — status: não implementado no Cobblemon base
+- cobblemon:vikavolt — Vikavolt — status: não implementado no Cobblemon base
+- cobblemon:virizion — Virizion — status: não implementado no Cobblemon base
+- cobblemon:volcanion — Volcanion — status: não implementado no Cobblemon base
+- cobblemon:vullaby — Vullaby — status: não implementado no Cobblemon base
+- cobblemon:wochien — Wo-Chien — status: não implementado no Cobblemon base
+- cobblemon:wormadam — Wormadam — status: não implementado no Cobblemon base
+- cobblemon:wurmple — Wurmple — status: não implementado no Cobblemon base
+- cobblemon:xurkitree — Xurkitree — status: não implementado no Cobblemon base
+- cobblemon:yveltal — Yveltal — status: não implementado no Cobblemon base
+- cobblemon:zacian — Zacian — status: não implementado no Cobblemon base
+- cobblemon:zamazenta — Zamazenta — status: não implementado no Cobblemon base
+- cobblemon:zangoose — Zangoose — status: não implementado no Cobblemon base
+- cobblemon:zekrom — Zekrom — status: não implementado no Cobblemon base
+- cobblemon:zeraora — Zeraora — status: não implementado no Cobblemon base
+- cobblemon:zygarde — Zygarde — status: não implementado no Cobblemon base
+
+### Formas e aspects
+
+Formato: `ID da espécie — nome da forma — aspects`.
+
+- cobblemon:absol — Mega — aspects: `mega` — espécie: Absol
+- cobblemon:aegislash — Blade — aspects: `blade-forme` — espécie: Aegislash
+- cobblemon:aerodactyl — Mega — aspects: `mega` — espécie: Aerodactyl
+- cobblemon:aggron — Mega — aspects: `mega` — espécie: Aggron
+- cobblemon:alakazam — Mega — aspects: `mega` — espécie: Alakazam
+- cobblemon:alcremie — Caramel-Swirl — aspects: `cream-caramel_swirl` — espécie: Alcremie
+- cobblemon:alcremie — Gmax — aspects: `gmax` — espécie: Alcremie
+- cobblemon:alcremie — Lemon-Cream — aspects: `cream-lemon` — espécie: Alcremie
+- cobblemon:alcremie — Matcha-Cream — aspects: `cream-matcha` — espécie: Alcremie
+- cobblemon:alcremie — Mint-Cream — aspects: `cream-mint` — espécie: Alcremie
+- cobblemon:alcremie — Rainbow-Swirl — aspects: `cream-rainbow_swirl` — espécie: Alcremie
+- cobblemon:alcremie — Ruby-Cream — aspects: `cream-ruby` — espécie: Alcremie
+- cobblemon:alcremie — Ruby-Swirl — aspects: `cream-ruby_swirl` — espécie: Alcremie
+- cobblemon:alcremie — Salted-Cream — aspects: `cream-salted` — espécie: Alcremie
+- cobblemon:altaria — Mega — aspects: `mega` — espécie: Altaria
+- cobblemon:ampharos — Mega — aspects: `mega` — espécie: Ampharos
+- cobblemon:arcanine — Hisui — aspects: `hisuian` — espécie: Arcanine
+- cobblemon:articuno — Galar — aspects: `galarian` — espécie: Articuno
+- cobblemon:avalugg — Hisui — aspects: `hisuian` — espécie: Avalugg
+- cobblemon:banette — Mega — aspects: `mega` — espécie: Banette
+- cobblemon:basculegion — F — aspects: `female` — espécie: Basculegion
+- cobblemon:basculin — Blue-Striped — aspects: `bluestriped` — espécie: Basculin
+- cobblemon:basculin — White-Striped — aspects: `whitestriped` — espécie: Basculin
+- cobblemon:beedrill — Mega — aspects: `mega` — espécie: Beedrill
+- cobblemon:blastoise — Gmax — aspects: `gmax` — espécie: Blastoise
+- cobblemon:blastoise — Mega — aspects: `mega` — espécie: Blastoise
+- cobblemon:blaziken — Mega — aspects: `mega` — espécie: Blaziken
+- cobblemon:braviary — Hisui — aspects: `hisuian` — espécie: Braviary
+- cobblemon:butterfree — Gmax — aspects: `gmax` — espécie: Butterfree
+- cobblemon:camerupt — Mega — aspects: `mega` — espécie: Camerupt
+- cobblemon:centiskorch — Gmax — aspects: `gmax` — espécie: Centiskorch
+- cobblemon:charizard — Gmax — aspects: `gmax` — espécie: Charizard
+- cobblemon:charizard — Mega-X — aspects: `mega_x` — espécie: Charizard
+- cobblemon:charizard — Mega-Y — aspects: `mega_y` — espécie: Charizard
+- cobblemon:cinderace — Gmax — aspects: `gmax` — espécie: Cinderace
+- cobblemon:copperajah — Gmax — aspects: `gmax` — espécie: Copperajah
+- cobblemon:corsola — Galar — aspects: `galarian` — espécie: Corsola
+- cobblemon:corviknight — Gmax — aspects: `gmax` — espécie: Corviknight
+- cobblemon:cramorant — Gorging — aspects: `gorging-form` — espécie: Cramorant
+- cobblemon:cramorant — Gulping — aspects: `gulping-form` — espécie: Cramorant
+- cobblemon:cubone — Alola-Bias — aspects: `region-bias-alola` — espécie: Cubone
+- cobblemon:cyndaquil — Hisui-Bias — aspects: `region-bias-hisui` — espécie: Cyndaquil
+- cobblemon:darmanitan — Galar — aspects: `standard-mode,galarian` — espécie: Darmanitan
+- cobblemon:darmanitan — Galar-Zen — aspects: `galarian,zen-mode` — espécie: Darmanitan
+- cobblemon:darmanitan — Zen — aspects: `zen-mode` — espécie: Darmanitan
+- cobblemon:dartrix — Hisui-Bias — aspects: `region-bias-hisui` — espécie: Dartrix
+- cobblemon:darumaka — Galar — aspects: `galarian` — espécie: Darumaka
+- cobblemon:decidueye — Hisui — aspects: `hisuian` — espécie: Decidueye
+- cobblemon:deerling — Autumn — aspects: `autumn` — espécie: Deerling
+- cobblemon:deerling — Summer — aspects: `summer` — espécie: Deerling
+- cobblemon:deerling — Winter — aspects: `winter` — espécie: Deerling
+- cobblemon:dewott — Hisui-Bias — aspects: `region-bias-hisui` — espécie: Dewott
+- cobblemon:diglett — Alola — aspects: `alolan` — espécie: Diglett
+- cobblemon:drednaw — Gmax — aspects: `gmax` — espécie: Drednaw
+- cobblemon:dudunsparce — Three-Segment — aspects: `three-segment-form` — espécie: Dudunsparce
+- cobblemon:dugtrio — Alola — aspects: `alolan` — espécie: Dugtrio
+- cobblemon:eevee — Gmax — aspects: `gmax` — espécie: Eevee
+- cobblemon:eiscue — Noice-Face — aspects: `noice_face` — espécie: Eiscue
+- cobblemon:electrode — Hisui — aspects: `hisuian` — espécie: Electrode
+- cobblemon:exeggcute — Alola-Bias — aspects: `region-bias-alola` — espécie: Exeggcute
+- cobblemon:exeggutor — Alola — aspects: `alolan` — espécie: Exeggutor
+- cobblemon:farfetchd — Galar — aspects: `galarian` — espécie: Farfetch’d
+- cobblemon:flabebe — Blue — aspects: `flower-blue` — espécie: Flabebe
+- cobblemon:flabebe — Orange — aspects: `flower-orange` — espécie: Flabebe
+- cobblemon:flabebe — White — aspects: `flower-white` — espécie: Flabebe
+- cobblemon:flabebe — Yellow — aspects: `flower-yellow` — espécie: Flabebe
+- cobblemon:floette — Blue — aspects: `flower-blue` — espécie: Floette
+- cobblemon:floette — Eternal — aspects: `flower-eternal` — espécie: Floette
+- cobblemon:floette — Orange — aspects: `flower-orange` — espécie: Floette
+- cobblemon:floette — White — aspects: `flower-white` — espécie: Floette
+- cobblemon:floette — Yellow — aspects: `flower-yellow` — espécie: Floette
+- cobblemon:florges — Blue — aspects: `flower-blue` — espécie: Florges
+- cobblemon:florges — Orange — aspects: `flower-orange` — espécie: Florges
+- cobblemon:florges — White — aspects: `flower-white` — espécie: Florges
+- cobblemon:florges — Yellow — aspects: `flower-yellow` — espécie: Florges
+- cobblemon:furfrou — Cinnamon — aspects: `cinnamon-trim` — espécie: Furfrou
+- cobblemon:furfrou — Crusader — aspects: `crusader-trim` — espécie: Furfrou
+- cobblemon:furfrou — Dandy — aspects: `dandy-trim` — espécie: Furfrou
+- cobblemon:furfrou — Debutante — aspects: `debutante-trim` — espécie: Furfrou
+- cobblemon:furfrou — Diamond — aspects: `diamond-trim` — espécie: Furfrou
+- cobblemon:furfrou — Heart — aspects: `heart-trim` — espécie: Furfrou
+- cobblemon:furfrou — Kabuki — aspects: `kabuki-trim` — espécie: Furfrou
+- cobblemon:furfrou — La-Reine — aspects: `la_reine-trim` — espécie: Furfrou
+- cobblemon:furfrou — Lavender — aspects: `lavender-trim` — espécie: Furfrou
+- cobblemon:furfrou — Matcha — aspects: `matcha-trim` — espécie: Furfrou
+- cobblemon:furfrou — Matron — aspects: `matron-trim` — espécie: Furfrou
+- cobblemon:furfrou — Mourner — aspects: `mourner-trim` — espécie: Furfrou
+- cobblemon:furfrou — Pharaoh — aspects: `pharaoh-trim` — espécie: Furfrou
+- cobblemon:furfrou — Rocker — aspects: `rocker-trim` — espécie: Furfrou
+- cobblemon:furfrou — Star — aspects: `star-trim` — espécie: Furfrou
+- cobblemon:gallade — Mega — aspects: `mega` — espécie: Gallade
+- cobblemon:garbodor — Gmax — aspects: `gmax` — espécie: Garbodor
+- cobblemon:garchomp — Mega — aspects: `mega` — espécie: Garchomp
+- cobblemon:gardevoir — Mega — aspects: `mega` — espécie: Gardevoir
+- cobblemon:gastrodon — East — aspects: `east-sea` — espécie: Gastrodon
+- cobblemon:gengar — Gmax — aspects: `gmax` — espécie: Gengar
+- cobblemon:gengar — Mega — aspects: `mega` — espécie: Gengar
+- cobblemon:geodude — Alola — aspects: `alolan` — espécie: Geodude
+- cobblemon:gimmighoul — Roaming — aspects: `roaming` — espécie: Gimmighoul
+- cobblemon:glalie — Mega — aspects: `mega` — espécie: Glalie
+- cobblemon:golem — Alola — aspects: `alolan` — espécie: Golem
+- cobblemon:goodra — Hisui — aspects: `hisuian` — espécie: Goodra
+- cobblemon:goomy — Hisui-Bias — aspects: `region-bias-hisui` — espécie: Goomy
+- cobblemon:gourgeist — Large — aspects: `pumpkin-size-large` — espécie: Gourgeist
+- cobblemon:gourgeist — Small — aspects: `pumpkin-size-small` — espécie: Gourgeist
+- cobblemon:gourgeist — Super — aspects: `pumpkin-size-super` — espécie: Gourgeist
+- cobblemon:graveler — Alola — aspects: `alolan` — espécie: Graveler
+- cobblemon:greninja — Ash — aspects: `ash` — espécie: Greninja
+- cobblemon:greninja — Bond — aspects: `bond` — espécie: Greninja
+- cobblemon:grimer — Alola — aspects: `alolan` — espécie: Grimer
+- cobblemon:grimmsnarl — Gmax — aspects: `gmax` — espécie: Grimmsnarl
+- cobblemon:growlithe — Hisui — aspects: `hisuian` — espécie: Growlithe
+- cobblemon:gyarados — Mega — aspects: `mega` — espécie: Gyarados
+- cobblemon:hatterene — Gmax — aspects: `gmax` — espécie: Hatterene
+- cobblemon:heracross — Mega — aspects: `mega` — espécie: Heracross
+- cobblemon:houndoom — Mega — aspects: `mega` — espécie: Houndoom
+- cobblemon:inteleon — Gmax — aspects: `gmax` — espécie: Inteleon
+- cobblemon:kangaskhan — Mega — aspects: `mega` — espécie: Kangaskhan
+- cobblemon:kingler — Gmax — aspects: `gmax` — espécie: Kingler
+- cobblemon:koffing — Galar-Bias — aspects: `region-bias-galar` — espécie: Koffing
+- cobblemon:lapras — Gmax — aspects: `gmax` — espécie: Lapras
+- cobblemon:latias — Mega — aspects: `mega` — espécie: Latias
+- cobblemon:latios — Mega — aspects: `mega` — espécie: Latios
+- cobblemon:lilligant — Hisui — aspects: `hisuian` — espécie: Lilligant
+- cobblemon:linoone — Galar — aspects: `galarian` — espécie: Linoone
+- cobblemon:lopunny — Mega — aspects: `mega` — espécie: Lopunny
+- cobblemon:lucario — Mega — aspects: `mega` — espécie: Lucario
+- cobblemon:machamp — Gmax — aspects: `gmax` — espécie: Machamp
+- cobblemon:manectric — Mega — aspects: `mega` — espécie: Manectric
+- cobblemon:marowak — Alola — aspects: `alolan` — espécie: Marowak
+- cobblemon:maushold — Four — aspects: `maushold-family-four` — espécie: Maushold
+- cobblemon:mawile — Mega — aspects: `mega` — espécie: Mawile
+- cobblemon:medicham — Mega — aspects: `mega` — espécie: Medicham
+- cobblemon:meowstic — F — aspects: `female` — espécie: Meowstic
+- cobblemon:meowth — Alola — aspects: `alolan` — espécie: Meowth
+- cobblemon:meowth — Galar — aspects: `galarian` — espécie: Meowth
+- cobblemon:meowth — Gmax — aspects: `gmax` — espécie: Meowth
+- cobblemon:metagross — Mega — aspects: `mega` — espécie: Metagross
+- cobblemon:mewtwo — Mega-X — aspects: `mega_x` — espécie: Mewtwo
+- cobblemon:mewtwo — Mega-Y — aspects: `mega_y` — espécie: Mewtwo
+- cobblemon:mimejr — Galar-Bias — aspects: `region-bias-galar` — espécie: Mime Jr.
+- cobblemon:mimikyu — Busted — aspects: `busted-form` — espécie: Mimikyu
+- cobblemon:moltres — Galar — aspects: `galarian` — espécie: Moltres
+- cobblemon:morpeko — Hangry — aspects: `hangry-mode` — espécie: Morpeko
+- cobblemon:mrmime — Galar — aspects: `galarian` — espécie: Mr. Mime
+- cobblemon:muk — Alola — aspects: `alolan` — espécie: Muk
+- cobblemon:ninetales — Alola — aspects: `alolan` — espécie: Ninetales
+- cobblemon:oinkologne — F — aspects: `female` — espécie: Oinkologne
+- cobblemon:oshawott — Hisui-Bias — aspects: `region-bias-hisui` — espécie: Oshawott
+- cobblemon:palafin — Hero — aspects: `hero-form` — espécie: Palafin
+- cobblemon:persian — Alola — aspects: `alolan` — espécie: Persian
+- cobblemon:petilil — Hisui-Bias — aspects: `region-bias-hisui` — espécie: Petilil
+- cobblemon:pichu — Alola-Bias — aspects: `region-bias-alola` — espécie: Pichu
+- cobblemon:pidgeot — Mega — aspects: `mega` — espécie: Pidgeot
+- cobblemon:pikachu — Alola-Bias — aspects: `region-bias-alola` — espécie: Pikachu
+- cobblemon:pikachu — Gmax — aspects: `gmax` — espécie: Pikachu
+- cobblemon:pikachu — Partner — aspects: `partner-cap` — espécie: Pikachu
+- cobblemon:pinsir — Mega — aspects: `mega` — espécie: Pinsir
+- cobblemon:poltchageist — Artisan — aspects: `artisan` — espécie: Poltchageist
+- cobblemon:polteageist — Antique — aspects: `antique` — espécie: Polteageist
+- cobblemon:ponyta — Galar — aspects: `galarian` — espécie: Ponyta
+- cobblemon:pumpkaboo — Large — aspects: `pumpkin-size-large` — espécie: Pumpkaboo
+- cobblemon:pumpkaboo — Small — aspects: `pumpkin-size-small` — espécie: Pumpkaboo
+- cobblemon:pumpkaboo — Super — aspects: `pumpkin-size-super` — espécie: Pumpkaboo
+- cobblemon:quilava — Hisui-Bias — aspects: `region-bias-hisui` — espécie: Quilava
+- cobblemon:qwilfish — Hisui — aspects: `hisuian` — espécie: Qwilfish
+- cobblemon:raichu — Alola — aspects: `alolan` — espécie: Raichu
+- cobblemon:rapidash — Galar — aspects: `galarian` — espécie: Rapidash
+- cobblemon:raticate — Alola — aspects: `alolan` — espécie: Raticate
+- cobblemon:rattata — Alola — aspects: `alolan` — espécie: Rattata
+- cobblemon:rayquaza — Mega — aspects: `mega` — espécie: Rayquaza
+- cobblemon:rillaboom — Gmax — aspects: `gmax` — espécie: Rillaboom
+- cobblemon:rotom — Fan — aspects: `fan-appliance` — espécie: Rotom
+- cobblemon:rotom — Frost — aspects: `frost-appliance` — espécie: Rotom
+- cobblemon:rotom — Heat — aspects: `heat-appliance` — espécie: Rotom
+- cobblemon:rotom — Mow — aspects: `mow-appliance` — espécie: Rotom
+- cobblemon:rotom — Wash — aspects: `wash-appliance` — espécie: Rotom
+- cobblemon:rowlet — Hisui-Bias — aspects: `region-bias-hisui` — espécie: Rowlet
+- cobblemon:rufflet — Hisui-Bias — aspects: `region-bias-hisui` — espécie: Rufflet
+- cobblemon:sableye — Mega — aspects: `mega` — espécie: Sableye
+- cobblemon:salamence — Mega — aspects: `mega` — espécie: Salamence
+- cobblemon:samurott — Hisui — aspects: `hisuian` — espécie: Samurott
+- cobblemon:sandaconda — Gmax — aspects: `gmax` — espécie: Sandaconda
+- cobblemon:sandshrew — Alola — aspects: `alolan` — espécie: Sandshrew
+- cobblemon:sandslash — Alola — aspects: `alolan` — espécie: Sandslash
+- cobblemon:sawsbuck — Autumn — aspects: `autumn` — espécie: Sawsbuck
+- cobblemon:sawsbuck — Summer — aspects: `summer` — espécie: Sawsbuck
+- cobblemon:sawsbuck — Winter — aspects: `winter` — espécie: Sawsbuck
+- cobblemon:sceptile — Mega — aspects: `mega` — espécie: Sceptile
+- cobblemon:scizor — Mega — aspects: `mega` — espécie: Scizor
+- cobblemon:sharpedo — Mega — aspects: `mega` — espécie: Sharpedo
+- cobblemon:shellos — East — aspects: `east-sea` — espécie: Shellos
+- cobblemon:sinistcha — Masterpiece — aspects: `masterpiece` — espécie: Sinistcha
+- cobblemon:sinistea — Antique — aspects: `antique` — espécie: Sinistea
+- cobblemon:sliggoo — Hisui — aspects: `hisuian` — espécie: Sliggoo
+- cobblemon:slowbro — Galar — aspects: `galarian` — espécie: Slowbro
+- cobblemon:slowbro — Mega — aspects: `mega` — espécie: Slowbro
+- cobblemon:slowking — Galar — aspects: `galarian` — espécie: Slowking
+- cobblemon:slowpoke — Galar — aspects: `galarian` — espécie: Slowpoke
+- cobblemon:sneasel — Hisui — aspects: `hisuian` — espécie: Sneasel
+- cobblemon:snorlax — Gmax — aspects: `gmax` — espécie: Snorlax
+- cobblemon:squawkabilly — Blue — aspects: `squawkabilly-color-blue` — espécie: Squawkabilly
+- cobblemon:squawkabilly — White — aspects: `squawkabilly-color-gray` — espécie: Squawkabilly
+- cobblemon:squawkabilly — Yellow — aspects: `squawkabilly-color-yellow` — espécie: Squawkabilly
+- cobblemon:steelix — Mega — aspects: `mega` — espécie: Steelix
+- cobblemon:stunfisk — Galar — aspects: `galarian` — espécie: Stunfisk
+- cobblemon:swampert — Mega — aspects: `mega` — espécie: Swampert
+- cobblemon:tatsugiri — Droopy — aspects: `tatsugiri-texture-droopy` — espécie: Tatsugiri
+- cobblemon:tatsugiri — Stretchy — aspects: `tatsugiri-texture-stretchy` — espécie: Tatsugiri
+- cobblemon:tauros — Paldea-Aqua — aspects: `paldean,aqua-breed` — espécie: Tauros
+- cobblemon:tauros — Paldea-Blaze — aspects: `blaze-breed,paldean` — espécie: Tauros
+- cobblemon:tauros — Paldea-Combat — aspects: `paldean` — espécie: Tauros
+- cobblemon:toxtricity — Gmax — aspects: `gmax,amped-form` — espécie: Toxtricity
+- cobblemon:toxtricity — Low-Key — aspects: `low_key-form` — espécie: Toxtricity
+- cobblemon:toxtricity — Low-Key-Gmax — aspects: `gmax,low_key-form` — espécie: Toxtricity
+- cobblemon:typhlosion — Hisui — aspects: `hisuian` — espécie: Typhlosion
+- cobblemon:tyranitar — Mega — aspects: `mega` — espécie: Tyranitar
+- cobblemon:unown — ! — aspects: `character-!` — espécie: Unown
+- cobblemon:unown — ? — aspects: `character-?` — espécie: Unown
+- cobblemon:unown — B — aspects: `character-b` — espécie: Unown
+- cobblemon:unown — C — aspects: `character-c` — espécie: Unown
+- cobblemon:unown — D — aspects: `character-d` — espécie: Unown
+- cobblemon:unown — E — aspects: `character-e` — espécie: Unown
+- cobblemon:unown — F — aspects: `character-f` — espécie: Unown
+- cobblemon:unown — G — aspects: `character-g` — espécie: Unown
+- cobblemon:unown — H — aspects: `character-h` — espécie: Unown
+- cobblemon:unown — I — aspects: `character-i` — espécie: Unown
+- cobblemon:unown — J — aspects: `character-j` — espécie: Unown
+- cobblemon:unown — K — aspects: `character-k` — espécie: Unown
+- cobblemon:unown — L — aspects: `character-l` — espécie: Unown
+- cobblemon:unown — M — aspects: `character-m` — espécie: Unown
+- cobblemon:unown — N — aspects: `character-n` — espécie: Unown
+- cobblemon:unown — O — aspects: `character-o` — espécie: Unown
+- cobblemon:unown — P — aspects: `character-p` — espécie: Unown
+- cobblemon:unown — Q — aspects: `character-q` — espécie: Unown
+- cobblemon:unown — R — aspects: `character-r` — espécie: Unown
+- cobblemon:unown — S — aspects: `character-s` — espécie: Unown
+- cobblemon:unown — T — aspects: `character-t` — espécie: Unown
+- cobblemon:unown — U — aspects: `character-u` — espécie: Unown
+- cobblemon:unown — V — aspects: `character-v` — espécie: Unown
+- cobblemon:unown — W — aspects: `character-w` — espécie: Unown
+- cobblemon:unown — X — aspects: `character-x` — espécie: Unown
+- cobblemon:unown — Y — aspects: `character-y` — espécie: Unown
+- cobblemon:unown — Z — aspects: `character-z` — espécie: Unown
+- cobblemon:ursaluna — Bloodmoon — aspects: `bloodmoon` — espécie: Ursaluna
+- cobblemon:venusaur — Gmax — aspects: `gmax` — espécie: Venusaur
+- cobblemon:venusaur — Mega — aspects: `mega` — espécie: Venusaur
+- cobblemon:vivillon — Pokeball — aspects: `vivillon-wings-poke-ball` — espécie: Vivillon
+- cobblemon:voltorb — Hisui — aspects: `hisuian` — espécie: Voltorb
+- cobblemon:vulpix — Alola — aspects: `alolan` — espécie: Vulpix
+- cobblemon:weezing — Galar — aspects: `galarian` — espécie: Weezing
+- cobblemon:wishiwashi — School — aspects: `school-form` — espécie: Wishiwashi
+- cobblemon:wooper — Paldea — aspects: `paldean` — espécie: Wooper
+- cobblemon:xerneas — Active — aspects: `active-mode` — espécie: Xerneas
+- cobblemon:yamask — Galar — aspects: `galarian` — espécie: Yamask
+- cobblemon:zapdos — Galar — aspects: `galarian` — espécie: Zapdos
+- cobblemon:zarude — Dada — aspects: `dada-cape` — espécie: Zarude
+- cobblemon:zigzagoon — Galar — aspects: `galarian` — espécie: Zigzagoon
+- cobblemon:zoroark — Hisui — aspects: `hisuian` — espécie: Zoroark
+- cobblemon:zorua — Hisui — aspects: `hisuian` — espécie: Zorua
+
+## Itens de combate
+
+A lista Cobblemon abaixo foi extraída dos assets de itens e filtrada para itens de batalha, held items, berries, gems, orbs, boosters, itens de tipo e itens competitivos. O site deve validar também no registro real da versão instalada e permitir catálogos adicionais de mods.
+
+### Itens Cobblemon
+
+- cobblemon:ability_shield
+- cobblemon:absorb_bulb
+- cobblemon:aguav_berry
+- cobblemon:apicot_berry
+- cobblemon:aspear_berry
+- cobblemon:assault_vest
+- cobblemon:babiri_berry
+- cobblemon:belue_berry
+- cobblemon:berry_juice
+- cobblemon:berry_sweet
+- cobblemon:binding_band
+- cobblemon:black_belt
+- cobblemon:black_glasses
+- cobblemon:bluk_berry
+- cobblemon:blunder_policy
+- cobblemon:bright_powder
+- cobblemon:bug_gem
+- cobblemon:candied_berry
+- cobblemon:charcoal_stick
+- cobblemon:charti_berry
+- cobblemon:cheri_berry
+- cobblemon:chesto_berry
+- cobblemon:chilan_berry
+- cobblemon:choice_band
+- cobblemon:choice_scarf
+- cobblemon:choice_specs
+- cobblemon:chople_berry
+- cobblemon:claw_fossil
+- cobblemon:clear_amulet
+- cobblemon:coba_berry
+- cobblemon:colbur_berry
+- cobblemon:cornn_berry
+- cobblemon:covert_cloak
+- cobblemon:custap_berry
+- cobblemon:damp_rock
+- cobblemon:dark_gem
+- cobblemon:deep_sea_scale
+- cobblemon:deep_sea_tooth
+- cobblemon:dragon_fang
+- cobblemon:dragon_gem
+- cobblemon:durin_berry
+- cobblemon:eggant_berry
+- cobblemon:eject_button
+- cobblemon:eject_pack
+- cobblemon:electric_gem
+- cobblemon:enigma_berry
+- cobblemon:expert_belt
+- cobblemon:fairy_feather
+- cobblemon:fairy_gem
+- cobblemon:fighting_gem
+- cobblemon:figy_berry
+- cobblemon:fire_gem
+- cobblemon:flame_orb
+- cobblemon:flying_gem
+- cobblemon:focus_band
+- cobblemon:focus_sash
+- cobblemon:ganlon_berry
+- cobblemon:ghost_gem
+- cobblemon:grass_gem
+- cobblemon:grepa_berry
+- cobblemon:grip_claw
+- cobblemon:ground_gem
+- cobblemon:haban_berry
+- cobblemon:hard_stone
+- cobblemon:heal_powder
+- cobblemon:heat_rock
+- cobblemon:heavy_duty_boots
+- cobblemon:hondew_berry
+- cobblemon:hopo_berry
+- cobblemon:iapapa_berry
+- cobblemon:ice_gem
+- cobblemon:icy_rock
+- cobblemon:jaboca_berry
+- cobblemon:kasib_berry
+- cobblemon:kebia_berry
+- cobblemon:kee_berry
+- cobblemon:kelpsy_berry
+- cobblemon:kings_rock
+- cobblemon:lansat_berry
+- cobblemon:leftovers
+- cobblemon:leppa_berry
+- cobblemon:liechi_berry
+- cobblemon:life_orb
+- cobblemon:light_ball
+- cobblemon:loaded_dice
+- cobblemon:lum_berry
+- cobblemon:magnet
+- cobblemon:mago_berry
+- cobblemon:magost_berry
+- cobblemon:maranga_berry
+- cobblemon:mental_herb
+- cobblemon:metal_powder
+- cobblemon:metronome
+- cobblemon:micle_berry
+- cobblemon:miracle_seed
+- cobblemon:mirror_herb
+- cobblemon:muscle_band
+- cobblemon:mystic_water
+- cobblemon:nanab_berry
+- cobblemon:never_melt_ice
+- cobblemon:nomel_berry
+- cobblemon:normal_gem
+- cobblemon:occa_berry
+- cobblemon:oran_berry
+- cobblemon:pamtre_berry
+- cobblemon:passho_berry
+- cobblemon:payapa_berry
+- cobblemon:pecha_berry
+- cobblemon:persim_berry
+- cobblemon:petaya_berry
+- cobblemon:pinap_berry
+- cobblemon:poison_barb
+- cobblemon:poison_gem
+- cobblemon:poke_puff_overlay_berry
+- cobblemon:poke_puff_overlay_berry_bitter
+- cobblemon:poke_puff_overlay_berry_dry
+- cobblemon:poke_puff_overlay_berry_mild
+- cobblemon:poke_puff_overlay_berry_plain
+- cobblemon:poke_puff_overlay_berry_sour
+- cobblemon:poke_puff_overlay_berry_spicy
+- cobblemon:poke_puff_overlay_berry_sweet
+- cobblemon:poke_puff_overlay_bitter_berry
+- cobblemon:poke_puff_overlay_bitter_strawberry
+- cobblemon:poke_puff_overlay_dry_berry
+- cobblemon:poke_puff_overlay_dry_strawberry
+- cobblemon:poke_puff_overlay_mild_berry
+- cobblemon:poke_puff_overlay_mild_strawberry
+- cobblemon:poke_puff_overlay_plain_berry
+- cobblemon:poke_puff_overlay_plain_strawberry
+- cobblemon:poke_puff_overlay_sour_berry
+- cobblemon:poke_puff_overlay_sour_strawberry
+- cobblemon:poke_puff_overlay_spicy_berry
+- cobblemon:poke_puff_overlay_spicy_strawberry
+- cobblemon:poke_puff_overlay_strawberry
+- cobblemon:poke_puff_overlay_strawberry_bitter
+- cobblemon:poke_puff_overlay_strawberry_dry
+- cobblemon:poke_puff_overlay_strawberry_mild
+- cobblemon:poke_puff_overlay_strawberry_plain
+- cobblemon:poke_puff_overlay_strawberry_sour
+- cobblemon:poke_puff_overlay_strawberry_spicy
+- cobblemon:poke_puff_overlay_strawberry_sweet
+- cobblemon:poke_puff_overlay_sweet_berry
+- cobblemon:poke_puff_overlay_sweet_strawberry
+- cobblemon:pomeg_berry
+- cobblemon:power_band
+- cobblemon:power_belt
+- cobblemon:power_herb
+- cobblemon:power_lens
+- cobblemon:protective_pads
+- cobblemon:psychic_gem
+- cobblemon:punching_glove
+- cobblemon:qualot_berry
+- cobblemon:quick_claw
+- cobblemon:quick_powder
+- cobblemon:rabuta_berry
+- cobblemon:rawst_berry
+- cobblemon:razor_claw
+- cobblemon:razor_fang
+- cobblemon:razz_berry
+- cobblemon:red_card
+- cobblemon:revival_herb
+- cobblemon:rindo_berry
+- cobblemon:ring_target
+- cobblemon:rock_gem
+- cobblemon:rocky_helmet
+- cobblemon:room_service
+- cobblemon:roseli_berry
+- cobblemon:rowap_berry
+- cobblemon:safety_goggles
+- cobblemon:salac_berry
+- cobblemon:scope_lens
+- cobblemon:sharp_beak
+- cobblemon:shed_shell
+- cobblemon:shell_bell
+- cobblemon:shell_helmet
+- cobblemon:shuca_berry
+- cobblemon:silk_scarf
+- cobblemon:silver_powder
+- cobblemon:sitrus_berry
+- cobblemon:smooth_rock
+- cobblemon:soft_sand
+- cobblemon:soothe_bell
+- cobblemon:spell_tag
+- cobblemon:spelon_berry
+- cobblemon:starf_berry
+- cobblemon:steel_gem
+- cobblemon:sticky_barb
+- cobblemon:strawberry_sweet
+- cobblemon:tamato_berry
+- cobblemon:tanga_berry
+- cobblemon:terrain_extender
+- cobblemon:throat_spray
+- cobblemon:touga_berry
+- cobblemon:toxic_orb
+- cobblemon:twisted_spoon
+- cobblemon:utility_umbrella
+- cobblemon:wacan_berry
+- cobblemon:water_gem
+- cobblemon:watmel_berry
+- cobblemon:weakness_policy
+- cobblemon:wepear_berry
+- cobblemon:white_herb
+- cobblemon:wide_lens
+- cobblemon:wiki_berry
+- cobblemon:wise_glasses
+- cobblemon:yache_berry
+- cobblemon:zoom_lens
+
+### IDs de referência vanilla
+
+- minecraft:assault_vest
+- minecraft:choice_band
+- minecraft:choice_scarf
+- minecraft:choice_specs
+- minecraft:focus_band
+- minecraft:focus_sash
+- minecraft:leftovers
+- minecraft:life_orb
+- minecraft:light_ball
+- minecraft:mental_herb
+- minecraft:metronome
+- minecraft:quick_claw
+- minecraft:rocky_helmet
+- minecraft:safety_goggles
+- minecraft:shed_shell
+- minecraft:shell_bell
+- minecraft:wide_lens
+- minecraft:zoom_lens
+- minecraft:bright_powder
+- minecraft:binding_band
+- minecraft:expert_belt
+- minecraft:heavy_duty_boots
+- minecraft:loaded_dice
+- minecraft:protective_pads
+- minecraft:room_service
+- minecraft:terrain_extender
+- minecraft:throat_spray
+- minecraft:utility_umbrella
+- minecraft:weakness_policy
+
+## Regras importantes
+
+- Não inventar formas, species IDs ou itens.
+- Usar sempre namespace completo.
+- Mega Showdown e outros mods podem adicionar espécies, formas e itens; permitir importar catálogos adicionais.
+- Diferenciar item existente no catálogo de item permitido como held item pelo RCT.
+- O datapack gerado deve ser independente do NBP.
+- Incluir README no ZIP com versões e instruções de instalação.
+
+## Critérios de aceitação
+
+1. Criar equipe com até seis Pokémon.
+2. Selecionar espécies e formas válidas.
+3. Configurar habilidade, natureza, golpes, IVs, EVs, shiny, gênero e item.
+4. Validar todos os campos.
+5. Gerar JSON válido para RCT.
+6. Baixar datapack instalável.
+7. Reabrir projeto salvo sem perda.
+8. Importar/exportar PokéPaste.
+9. Atualizar catálogo por versão.
+10. Nunca gerar IDs inválidos.

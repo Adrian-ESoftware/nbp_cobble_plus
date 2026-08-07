@@ -51,6 +51,5 @@
   "message.nbp_cobble_plus.ruby.chain_missing": "Você precisa dos Rubis carregados por Uxie, Mesprit e Azelf.",
   "message.nbp_cobble_plus.ruby.chain_created": "Os três Rubis dos Guardiões dos Lagos formaram a Corrente Vermelha.",
   "itemGroup.nbp_cobble_plus": "NBP Cobble Plus",
-  "item.nbp_cobble_plus.capture_permit": "Licença de Captura",
-  "item.nbp_cobble_plus.trainer_editor": "Editor de Treinador"
+  "item.nbp_cobble_plus.capture_permit": "Licença de Captura"
 }

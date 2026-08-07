@@ -213,7 +213,6 @@ class NbpCobblePlusFabric : ModInitializer {
         register("dna_syringe_mew", ModItems.DNA_SYRINGE_MEW)
         register("dna_syringe_mewtwo", ModItems.DNA_SYRINGE_MEWTWO)
         register("capture_permit", ModItems.CAPTURE_PERMIT)
-        register("trainer_editor", ModItems.TRAINER_EDITOR)
     }
 
     private fun registerBlocks() {
@@ -244,7 +243,7 @@ class NbpCobblePlusFabric : ModInitializer {
 
     private fun creativeItems(): List<ItemLike> = listOf(
         ModItems.AZURE_FLUTE, ModItems.URN_OF_THUNDER, ModItems.URN_OF_FREEZING, ModItems.URN_OF_BURNING,
-        ModItems.RUBY, ModItems.RED_CHAIN, ModItems.DNA_SYRINGE_EMPTY, ModItems.DNA_SYRINGE_MEW, ModItems.DNA_SYRINGE_MEWTWO, ModItems.CAPTURE_PERMIT, ModItems.TRAINER_EDITOR,
+        ModItems.RUBY, ModItems.RED_CHAIN, ModItems.DNA_SYRINGE_EMPTY, ModItems.DNA_SYRINGE_MEW, ModItems.DNA_SYRINGE_MEWTWO, ModItems.CAPTURE_PERMIT,
         ModBlocks.RUBY_ORE, ModBlocks.PALKIA_BLOCK, ModBlocks.USED_PALKIA_BLOCK, ModBlocks.DIALGA_BLOCK,
         ModBlocks.USED_DIALGA_BLOCK, ModBlocks.GIRATINA_BLOCK, ModBlocks.USED_GIRATINA_BLOCK,
         ModBlocks.ARCEUS_CHALICE, ModBlocks.USED_ARCEUS_CHALICE
