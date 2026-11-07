@@ -2,7 +2,6 @@ package com.nbp.cobbleplus.feature.impl
 
 import com.cobblemon.mod.common.api.battles.model.actor.ActorType
 import com.cobblemon.mod.common.api.events.CobblemonEvents
-import com.cobblemon.mod.common.api.pokedex.PokedexEntryProgress
 import com.cobblemon.mod.common.api.reactive.ObservableSubscription
 import com.cobblemon.mod.common.battles.actor.PlayerBattleActor
 import com.cobblemon.mod.common.pokemon.Pokemon
@@ -93,9 +92,9 @@ object PointsFeature : FeatureModule {
         }
         subscriptions += CobblemonEvents.POKEDEX_DATA_CHANGED_POST.subscribe { event ->
             val config = NbpConfig.data.points
-            // The dex only ever transitions a given species+form to ENCOUNTERED once, so this
+            // The dex only ever transitions a given species+form to ENCOUNTERED/SEEN once, so this
             // naturally grants type points a single time per species and variation scanned.
-            if (!isEnabled || !config.rewardPokedexScans || event.knowledge != PokedexEntryProgress.ENCOUNTERED) return@subscribe
+            if (!isEnabled || !config.rewardPokedexScans || (event.knowledge.name != "ENCOUNTERED" && event.knowledge.name != "SEEN")) return@subscribe
             val player = serverRef?.playerList?.getPlayer(event.playerUUID) ?: return@subscribe
             val types = event.dataSource.pokemon.types.mapNotNull { PointType.typeOf(it.name) }.distinct()
             if (types.isEmpty()) return@subscribe

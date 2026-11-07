@@ -26,6 +26,7 @@ import net.minecraft.world.BossEvent
  */
 object VanillaMobSpawnBlockerFeature : FeatureModule {
     private const val REPLACEMENT_SOURCE_TAG = "nbp_special_spawn_replacement"
+    private const val SPAWNER_MOB_TAG = "nbp_spawner_spawned_mob"
     private const val ENDER_RAYQUAZA_TAG = "nbp_ender_dragon_replacement"
     private const val ENDER_CONTROLLER_TAG = "nbp_ender_dragon_controller"
     private val pendingDiscards = mutableListOf<Entity>()
@@ -62,6 +63,11 @@ object VanillaMobSpawnBlockerFeature : FeatureModule {
         if (!isEnabled || entity !is Mob) return false
         if (entity.tags.contains(ENDER_CONTROLLER_TAG)) return false
 
+        // Spawners de monstros e trial spawners são gerenciados por outro mod
+        if (isSpawnerMob(entity) && !NbpConfig.data.vanillaMobSpawnBlocker.enableSpawnerReplacements) {
+            return false
+        }
+
         val entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)
         if (entityId.namespace != "minecraft") return false
 
@@ -93,6 +99,15 @@ object VanillaMobSpawnBlockerFeature : FeatureModule {
     @JvmStatic
     fun markReplacementSource(entity: Entity) {
         entity.addTag(REPLACEMENT_SOURCE_TAG)
+    }
+
+    @JvmStatic
+    fun markSpawnerMob(entity: Entity) {
+        entity.addTag(SPAWNER_MOB_TAG)
+    }
+
+    fun isSpawnerMob(entity: Entity): Boolean {
+        return entity.tags.contains(SPAWNER_MOB_TAG)
     }
 
     /**

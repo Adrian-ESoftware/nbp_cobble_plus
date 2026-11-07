@@ -60,6 +60,7 @@ data class VanillaMobSpawnBlockerConfig(
         "minecraft:bee"
     ),
     var enablePokemonReplacements: Boolean = true,
+    var enableSpawnerReplacements: Boolean = false,
     var replacementRadius: Double = 16.0,
     var maxNearbyReplacements: Int = 12,
     var replacementLevelVariance: Int = 5,
@@ -368,7 +369,7 @@ data class PointsConfig(
 )
 
 data class MissionsConfig(
-    var enabled: Boolean = true,
+    var enabled: Boolean = false,
     var dailyCount: Int = 3,
     var weeklyCount: Int = 5,
     /** Hora UTC em que o ciclo diário é fechado (ex.: 0 = meia-noite UTC). */

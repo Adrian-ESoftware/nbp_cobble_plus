@@ -7,7 +7,6 @@ import com.cobblemon.mod.common.api.events.pokemon.ExperienceGainedEvent
 import com.cobblemon.mod.common.api.pokemon.stats.Stat
 import com.cobblemon.mod.common.api.pokemon.stats.Stats
 import com.cobblemon.mod.common.api.reactive.ObservableSubscription
-import com.cobblemon.mod.common.api.spawning.SpawnBucket
 import com.cobblemon.mod.common.api.spawning.SpawnCause
 import com.cobblemon.mod.common.api.spawning.detail.PokemonSpawnDetail
 import com.cobblemon.mod.common.api.spawning.detail.SpawnDetail
@@ -134,7 +133,7 @@ object CatchComboFeature : FeatureModule {
      * leia `spawner.influences` (ex: Cobblenav) enxergam o mesmo bônus.
      */
     private class CatchComboSpawningInfluence(private val playerUuid: UUID) : SpawningInfluence {
-        override fun affectBucketWeights(bucketWeights: MutableMap<SpawnBucket, Float>) {
+        override fun affectBucketWeights(bucketWeights: MutableMap<String, Float>) {
             val config = NbpConfig.data.catchCombo
             if (!config.enableRareSpawnBonus || config.rareSpawnBucketNames.isEmpty()) return
 
@@ -146,11 +145,11 @@ object CatchComboFeature : FeatureModule {
 
             val changed = mutableListOf<String>()
             for (bucket in bucketWeights.keys.toList()) {
-                if (config.rareSpawnBucketNames.any { it.equals(bucket.name, ignoreCase = true) }) {
+                if (config.rareSpawnBucketNames.any { it.equals(bucket, ignoreCase = true) }) {
                     val before = bucketWeights.getValue(bucket)
                     val after = before * multiplier.toFloat()
                     bucketWeights[bucket] = after
-                    changed += "${bucket.name}: $before -> $after"
+                    changed += "$bucket: $before -> $after"
                 }
             }
 
@@ -209,14 +208,14 @@ object CatchComboFeature : FeatureModule {
             )
             val spawnablePositions = spawner.resolver.resolve(spawner, SpawnablePositionCalculator.prioritizedAreaCalculators, zone)
 
-            val buckets = Cobblemon.bestSpawner.config.buckets
-            val bucketWeights = buckets.associateWith { it.weight }.toMutableMap()
+            val buckets = Cobblemon.bestSpawner.config.worldBuckets
+            val bucketWeights = buckets.toMutableMap()
             (spawner.influences + zone.unconditionalInfluences).forEach { it.affectBucketWeights(bucketWeights) }
             val bucketWeightTotal = bucketWeights.values.sum()
             if (bucketWeightTotal <= 0f) return 0.0
 
             var speciesChance = 0.0
-            for (bucket in buckets) {
+            for ((bucket, _) in buckets) {
                 val bucketProbability = (bucketWeights[bucket] ?: 0f) / bucketWeightTotal
                 if (bucketProbability <= 0f) continue
 

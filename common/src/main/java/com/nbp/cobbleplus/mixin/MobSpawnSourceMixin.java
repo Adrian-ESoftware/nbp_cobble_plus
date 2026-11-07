@@ -18,7 +18,7 @@ abstract class MobSpawnSourceMixin {
                                        MobSpawnType spawnType, SpawnGroupData spawnData,
                                        CallbackInfoReturnable<SpawnGroupData> callback) {
         if (spawnType == MobSpawnType.SPAWNER || spawnType == MobSpawnType.TRIAL_SPAWNER) {
-            VanillaMobSpawnBlockerFeature.markReplacementSource((Mob) (Object) this);
+            VanillaMobSpawnBlockerFeature.markSpawnerMob((Mob) (Object) this);
         }
     }
 }

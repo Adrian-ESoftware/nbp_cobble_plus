@@ -4,8 +4,6 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "MobSpawnSourceMixin",
-    "BaseSpawnerMixin",
-    "TrialSpawnerMixin",
     "InfestedBlockMixin",
     "CarvedPumpkinBlockMixin"
     ,"FurnaceResultSlotMixin"

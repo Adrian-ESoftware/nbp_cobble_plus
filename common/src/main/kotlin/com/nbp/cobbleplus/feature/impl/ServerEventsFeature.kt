@@ -487,7 +487,7 @@ object ServerEventsFeature : FeatureModule {
                 zone
             )
             val target = species.substringAfterLast(":")
-            val detail = Cobblemon.bestSpawner.config.buckets.asSequence()
+            val detail = Cobblemon.bestSpawner.config.worldBuckets.keys.asSequence()
                 .flatMap { bucket -> positions.asSequence().flatMap { position -> spawner.getMatchingSpawns(bucket, position).asSequence() } }
                 .filterIsInstance<PokemonSpawnDetail>()
                 .firstOrNull { it.pokemon.species?.substringAfterLast(":")?.equals(target, true) == true }

@@ -19,7 +19,7 @@ object PlayerLanguage {
         "lang.changed" to "§a[NBP] Language changed to §e{lang}§a.",
         "lang.invalid" to "§c[NBP] Unsupported language. Available: en_us, pt_br.",
         "player.only" to "Only players can use this command.",
-        "command.status" to "§a[NBP Cobble Plus] Server Suite v1.0.0 is active! Type §e/nbp help §afor help.",
+        "command.status" to "§a[NBP Cobble Plus] Server Suite v1.2 is active! Type §e/nbp help §afor help.",
         "command.reloaded" to "§a[NBP Cobble Plus] Configuration and modules reloaded successfully!",
         "command.announce" to "§a[NBP] Announcement sent successfully.",
         "legend.chance" to "§6[Legendary] §fYour current host chance is §a{chance}%§f.",
@@ -205,6 +205,7 @@ object PlayerLanguage {
         ,"event.end.perfect_iv_rush" to "§7[Event] The Perfect IV Rush has ended."
         ,"event.end.double_loot" to "§7[Event] The Double Loot event has ended."
         ,"event.end.hidden_ability_outbreak" to "§7[Event] The Hidden Ability Outbreak has ended."
+        ,"missions.disabled" to "§c[Missions] The missions system is disabled on this server."
         ,"missions.daily_generated" to "§a[Missions] §fYour daily missions have been generated! Type §e/nbp mission §fto view them."
         ,"missions.weekly_generated" to "§6[Missions] §fNew weekly missions have been generated! Type §e/nbp mission §fto view them."
         ,"missions.completed" to "§6§l[MISSION COMPLETE] §f{mission} §a✔ §7- Rewards granted!"
@@ -229,7 +230,7 @@ object PlayerLanguage {
         "lang.changed" to "§a[NBP] Idioma alterado para §e{lang}§a.",
         "lang.invalid" to "§c[NBP] Idioma não suportado. Disponíveis: en_us, pt_br.",
         "player.only" to "Apenas jogadores podem usar este comando.",
-        "command.status" to "§a[NBP Cobble Plus] Suíte de Servidor v1.0.0 ativa! Digite §e/nbp help §apara ajuda.",
+        "command.status" to "§a[NBP Cobble Plus] Suíte de Servidor v1.2 ativa! Digite §e/nbp help §apara ajuda.",
         "command.reloaded" to "§a[NBP Cobble Plus] Configurações e módulos recarregados com sucesso!",
         "command.announce" to "§a[NBP] Anúncio enviado manualmente com sucesso.",
         "legend.chance" to "§6[Lendário] §fSua chance atual de ser anfitrião é §a{chance}%§f.",

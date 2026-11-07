@@ -409,6 +409,10 @@ object NbpCommands {
                         Commands.literal("list").executes { context ->
                             val player = context.source.player
                             if (player == null) { context.source.sendFailure(PlayerLanguage.text(null, "player.only")); return@executes 0 }
+                            if (!MissionsFeature.isEnabled) {
+                                player.sendSystemMessage(PlayerLanguage.text(player, "missions.disabled"))
+                                return@executes 0
+                            }
                             MissionsFeature.listFor(player).forEach { player.sendSystemMessage(Component.literal(it)) }
                             1
                         }

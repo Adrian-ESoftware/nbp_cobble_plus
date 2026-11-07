@@ -5,7 +5,6 @@ import com.cobblemon.mod.common.api.events.CobblemonEvents
 import com.cobblemon.mod.common.api.pokemon.stats.Stat
 import com.cobblemon.mod.common.api.pokemon.stats.Stats
 import com.cobblemon.mod.common.api.reactive.ObservableSubscription
-import com.cobblemon.mod.common.api.spawning.SpawnBucket
 import com.cobblemon.mod.common.api.spawning.detail.SpawnDetail
 import com.cobblemon.mod.common.api.spawning.influence.SpawningInfluence
 import com.cobblemon.mod.common.api.spawning.position.SpawnablePosition
@@ -513,9 +512,9 @@ class SafariSpawningInfluence(
     private val rareMult: Float,
     private val ultraRareMult: Float
 ) : SpawningInfluence {
-    override fun affectBucketWeights(bucketWeights: MutableMap<SpawnBucket, Float>) {
+    override fun affectBucketWeights(bucketWeights: MutableMap<String, Float>) {
         for ((bucket, weight) in bucketWeights.entries.toList()) {
-            val name = bucket.name.lowercase()
+            val name = bucket.lowercase()
             val mult = when {
                 name.contains("ultra-rare") || name.contains("ultrarare") -> ultraRareMult
                 name.contains("rare") -> rareMult
