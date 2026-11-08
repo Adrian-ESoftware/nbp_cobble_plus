@@ -16,6 +16,9 @@ import com.nbp.cobbleplus.feature.impl.PointsFeature
 import com.nbp.cobbleplus.feature.impl.MissionsFeature
 import com.nbp.cobbleplus.feature.impl.RctBattleConditionFeature
 import com.nbp.cobbleplus.feature.impl.GtsFeature
+import com.nbp.cobbleplus.feature.impl.BuffFeature
+import com.nbp.cobbleplus.network.BuffShopSyncPayload
+import com.nbp.cobbleplus.network.BuffPurchasePayload
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.world.InteractionResultHolder
@@ -94,6 +97,14 @@ class NbpCobblePlusFabric : ModInitializer {
             ServerPlayNetworking.send(player, PointsViewSyncPayload(portuguese, values))
         }
         PayloadTypeRegistry.playS2C().register(MissionsViewSyncPayload.TYPE, MissionsViewSyncPayload.CODEC)
+        PayloadTypeRegistry.playS2C().register(BuffShopSyncPayload.TYPE, BuffShopSyncPayload.CODEC)
+        PayloadTypeRegistry.playC2S().register(BuffPurchasePayload.TYPE, BuffPurchasePayload.CODEC)
+        BuffFeature.shopViewNetworkSender = { player, payload -> ServerPlayNetworking.send(player, payload) }
+        ServerPlayNetworking.registerGlobalReceiver(BuffPurchasePayload.TYPE) { payload, context ->
+            context.server().execute {
+                BuffFeature.purchase(context.player(), payload.buffId, payload.level)
+            }
+        }
         PayloadTypeRegistry.playS2C().register(GtsViewSyncPayload.TYPE, GtsViewSyncPayload.CODEC)
         PayloadTypeRegistry.playS2C().register(GtsPartyViewPayload.TYPE, GtsPartyViewPayload.CODEC)
         PayloadTypeRegistry.playC2S().register(GtsPurchasePayload.TYPE, GtsPurchasePayload.CODEC)
@@ -146,6 +157,7 @@ class NbpCobblePlusFabric : ModInitializer {
             GtsFeature.claimPayments(handler.player)
             CatchComboFeature.attachSpawningInfluence(handler.player)
             CatchComboFeature.syncHud(handler.player)
+            BuffFeature.handlePlayerJoin(handler.player)
         }
 
         ServerEntityEvents.ENTITY_LOAD.register { entity, _ ->
@@ -171,6 +183,7 @@ class NbpCobblePlusFabric : ModInitializer {
             ServerEventsFeature.tick(server)
             MissionsFeature.tick(server)
             RctBattleConditionFeature.tick(server)
+            BuffFeature.tick(server)
         }
 
         ServerLifecycleEvents.SERVER_STARTING.register { server ->
@@ -184,6 +197,7 @@ class NbpCobblePlusFabric : ModInitializer {
             PointsFeature.bindServer(server)
             MissionsFeature.bindServer(server)
             GtsFeature.bindServer(server)
+            BuffFeature.bindServer(server)
         }
 
         ServerLifecycleEvents.SERVER_STOPPING.register { _ ->
@@ -196,6 +210,7 @@ class NbpCobblePlusFabric : ModInitializer {
             PointsFeature.unbindServer()
             MissionsFeature.unbindServer()
             GtsFeature.unbindServer()
+            BuffFeature.unbindServer()
         }
     }
 

@@ -399,6 +399,20 @@ data class RctBattleConditionConfig(
     /** Maps an RCT trainer id to a Showdown weather/terrain id (e.g. "rain", "electricterrain"). */
     var trainerConditions: Map<String, String> = emptyMap()
 )
+data class BuffConfigEntry(
+    var durationMinutes: Int? = null,
+    var costs: List<Long>? = null,
+    var effectValues: List<Double>? = null
+)
+
+data class BuffsConfig(
+    var enabled: Boolean = true,
+    var defaultDurationMinutes: Int = 30,
+    var hiddenAbilityBaseChance: Double = 0.05,
+    var rareSpawnBuckets: List<String> = listOf("rare", "ultra-rare"),
+    var buffs: Map<String, BuffConfigEntry> = emptyMap()
+)
+
 data class ModConfigData(
     var welcome: WelcomeConfig = WelcomeConfig(),
     var announcer: AutoAnnouncerConfig = AutoAnnouncerConfig(),
@@ -418,7 +432,8 @@ data class ModConfigData(
     var missions: MissionsConfig = MissionsConfig(),
     var synchronizedNatures: SynchronizedNaturesConfig = SynchronizedNaturesConfig(),
     var gts: GtsConfig = GtsConfig(),
-    var rctBattleCondition: RctBattleConditionConfig = RctBattleConditionConfig()
+    var rctBattleCondition: RctBattleConditionConfig = RctBattleConditionConfig(),
+    var buffs: BuffsConfig = BuffsConfig()
 )
 
 object NbpConfig {
@@ -437,7 +452,7 @@ object NbpConfig {
                 FileReader(configFile).use { reader ->
                     data = gson.fromJson(reader, ModConfigData::class.java) ?: ModConfigData()
                 }
-                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults() or ensurePointsConfig() or ensureMissionsConfig()
+                val changed = addMissingBossReplacements() or migrateRaidEconomyDefaults() or ensurePointsConfig() or ensureMissionsConfig() or ensureBuffsConfig()
                 if (changed) save()
             } else {
                 save()
@@ -494,6 +509,14 @@ object NbpConfig {
     private fun ensureMissionsConfig(): Boolean {
         if (data.missions == null) {
             data.missions = MissionsConfig()
+            return true
+        }
+        return false
+    }
+
+    private fun ensureBuffsConfig(): Boolean {
+        if (data.buffs == null) {
+            data.buffs = BuffsConfig()
             return true
         }
         return false

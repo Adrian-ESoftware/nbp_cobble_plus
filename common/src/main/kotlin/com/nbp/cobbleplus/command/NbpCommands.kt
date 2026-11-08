@@ -19,6 +19,7 @@ import com.nbp.cobbleplus.feature.impl.ServerEventsFeature
 import com.nbp.cobbleplus.feature.impl.ServerEventType
 import com.nbp.cobbleplus.feature.impl.MissionsFeature
 import com.nbp.cobbleplus.feature.impl.GtsFeature
+import com.nbp.cobbleplus.feature.impl.BuffFeature
 import com.nbp.cobbleplus.config.MissionsConfigFile
 import com.nbp.cobbleplus.mission.MissionCycle
 import com.nbp.cobbleplus.i18n.PlayerLanguage
@@ -52,6 +53,8 @@ object NbpCommands {
                                 "§e/nbp combo reset §7- Reseta seu combo de capturas\n" +
                                 "§e/nbp combo hud §7- Mostra/esconde o HUD do combo na tela\n" +
                                 "§e/nbp capturecap §7- Mostra seu limite de captura\n" +
+                                "§e/nbp buffs §7- Abre a loja de buffs e mods de pontos\n" +
+                                "§e/nbp points §7- Mostra seus pontos\n" +
                                 "§e/nbp economy §7- Mostra seus ganhos e limite diário\n" +
                                 "§e/nbp mission §7- Abre a tela de missões diárias e semanais\n" +
                                 "§e/nbp mission list §7- Lista suas missões no chat\n" +
@@ -357,6 +360,36 @@ object NbpCommands {
                             PointsFeature.openView(player); 1
                         }
                     })
+                    .then(Commands.literal("shop").executes { context ->
+                        val player = context.source.player
+                        if (player == null) {
+                            context.source.sendFailure(PlayerLanguage.text(null, "player.only")); 0
+                        } else {
+                            BuffFeature.openShop(player); 1
+                        }
+                    })
+            )
+            .then(
+                Commands.literal("buffs")
+                    .executes { context ->
+                        val player = context.source.player
+                        if (player == null) {
+                            context.source.sendFailure(PlayerLanguage.text(null, "player.only")); 0
+                        } else {
+                            BuffFeature.openShop(player); 1
+                        }
+                    }
+            )
+            .then(
+                Commands.literal("shop")
+                    .executes { context ->
+                        val player = context.source.player
+                        if (player == null) {
+                            context.source.sendFailure(PlayerLanguage.text(null, "player.only")); 0
+                        } else {
+                            BuffFeature.openShop(player); 1
+                        }
+                    }
             )
             .then(
                 Commands.literal("safari")
@@ -640,6 +673,19 @@ object NbpCommands {
                     0
                 } else {
                     ServerEventsFeature.getShinyStatusMessages(player).forEach(player::sendSystemMessage)
+                    1
+                }
+            }
+        )
+
+        dispatcher.register(
+            Commands.literal("buffs").executes { context ->
+                val player = context.source.player
+                if (player == null) {
+                    context.source.sendFailure(PlayerLanguage.text(null, "player.only"))
+                    0
+                } else {
+                    BuffFeature.openShop(player)
                     1
                 }
             }

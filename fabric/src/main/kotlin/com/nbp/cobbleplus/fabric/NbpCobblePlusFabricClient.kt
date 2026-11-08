@@ -8,6 +8,10 @@ import com.nbp.cobbleplus.hud.PointsScreen
 import com.nbp.cobbleplus.hud.MissionsScreen
 import com.nbp.cobbleplus.hud.GtsScreen
 import com.nbp.cobbleplus.hud.GtsClientNetworking
+import com.nbp.cobbleplus.hud.BuffShopScreen
+import com.nbp.cobbleplus.hud.BuffShopClientNetworking
+import com.nbp.cobbleplus.network.BuffShopSyncPayload
+import com.nbp.cobbleplus.network.BuffPurchasePayload
 import com.nbp.cobbleplus.network.CatchComboSyncPayload
 import com.nbp.cobbleplus.network.PointsRewardSyncPayload
 import com.nbp.cobbleplus.network.PointsViewSyncPayload
@@ -59,6 +63,17 @@ class NbpCobblePlusFabricClient : ClientModInitializer {
                 val current = Minecraft.getInstance().screen
                 if (current is GtsScreen) current.updateParty(payload)
             }
+        }
+
+        ClientPlayNetworking.registerGlobalReceiver(BuffShopSyncPayload.TYPE) { payload, _ ->
+            Minecraft.getInstance().execute {
+                val current = Minecraft.getInstance().screen
+                if (current is BuffShopScreen) current.update(payload) else Minecraft.getInstance().setScreen(BuffShopScreen(payload))
+            }
+        }
+
+        BuffShopClientNetworking.purchase = { buffId, level ->
+            ClientPlayNetworking.send(BuffPurchasePayload(buffId, level))
         }
 
         GtsClientNetworking.purchase = { id -> ClientPlayNetworking.send(GtsPurchasePayload(id)) }

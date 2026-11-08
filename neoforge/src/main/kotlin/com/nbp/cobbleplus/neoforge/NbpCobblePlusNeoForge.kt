@@ -16,6 +16,11 @@ import com.nbp.cobbleplus.feature.impl.PointsFeature
 import com.nbp.cobbleplus.feature.impl.MissionsFeature
 import com.nbp.cobbleplus.feature.impl.RctBattleConditionFeature
 import com.nbp.cobbleplus.feature.impl.GtsFeature
+import com.nbp.cobbleplus.feature.impl.BuffFeature
+import com.nbp.cobbleplus.hud.BuffShopScreen
+import com.nbp.cobbleplus.hud.BuffShopClientNetworking
+import com.nbp.cobbleplus.network.BuffShopSyncPayload
+import com.nbp.cobbleplus.network.BuffPurchasePayload
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import com.nbp.cobbleplus.hud.CatchComboHudRenderer
 import com.nbp.cobbleplus.hud.CatchComboHudState
@@ -142,6 +147,17 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
                     GtsFeature.sendPartyView(player)
                 }
             }
+            registrar.playToClient(BuffShopSyncPayload.TYPE, BuffShopSyncPayload.CODEC) { payload, _ ->
+                Minecraft.getInstance().execute {
+                    val current = Minecraft.getInstance().screen
+                    if (current is BuffShopScreen) current.update(payload) else Minecraft.getInstance().setScreen(BuffShopScreen(payload))
+                }
+            }
+            registrar.playToServer(BuffPurchasePayload.TYPE, BuffPurchasePayload.CODEC) { payload, context ->
+                (context.player() as? ServerPlayer)?.let { player ->
+                    BuffFeature.purchase(player, payload.buffId, payload.level)
+                }
+            }
         }
 
         CatchComboFeature.networkSender = { player, lines ->
@@ -158,12 +174,14 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
         }
         GtsFeature.viewNetworkSender = { player, payload -> PacketDistributor.sendToPlayer(player, payload) }
         GtsFeature.partyViewNetworkSender = { player, payload -> PacketDistributor.sendToPlayer(player, payload) }
+        BuffFeature.shopViewNetworkSender = { player, payload -> PacketDistributor.sendToPlayer(player, payload) }
         if (FMLEnvironment.dist == Dist.CLIENT) {
             GtsClientNetworking.purchase = { id -> PacketDistributor.sendToServer(GtsPurchasePayload(id)) }
             GtsClientNetworking.collect = { PacketDistributor.sendToServer(GtsCollectPayload()) }
             GtsClientNetworking.sell = { slot, price -> PacketDistributor.sendToServer(GtsSellPayload(slot, price)) }
             GtsClientNetworking.cancel = { id -> PacketDistributor.sendToServer(GtsCancelPayload(id)) }
             GtsClientNetworking.requestParty = { PacketDistributor.sendToServer(GtsRequestPartyPayload()) }
+            BuffShopClientNetworking.purchase = { buffId, level -> PacketDistributor.sendToServer(BuffPurchasePayload(buffId, level)) }
         }
 
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent ->
@@ -177,6 +195,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
                 GtsFeature.claimPayments(player)
                 CatchComboFeature.attachSpawningInfluence(player)
                 CatchComboFeature.syncHud(player)
+                BuffFeature.handlePlayerJoin(player)
             }
         }
 
@@ -203,6 +222,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             ServerEventsFeature.tick(event.server)
             MissionsFeature.tick(event.server)
             RctBattleConditionFeature.tick(event.server)
+            BuffFeature.tick(event.server)
         }
 
         NeoForge.EVENT_BUS.addListener { event: PlayerInteractEvent.EntityInteract ->
@@ -232,6 +252,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
                 PointsFeature.bindServer(event.server)
                 MissionsFeature.bindServer(event.server)
                 GtsFeature.bindServer(event.server)
+                BuffFeature.bindServer(event.server)
         }
 
         NeoForge.EVENT_BUS.addListener { event: ServerStoppingEvent ->
@@ -244,6 +265,7 @@ class NbpCobblePlusNeoForge(modEventBus: IEventBus) {
             PointsFeature.unbindServer()
             MissionsFeature.unbindServer()
             GtsFeature.unbindServer()
+            BuffFeature.unbindServer()
         }
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
